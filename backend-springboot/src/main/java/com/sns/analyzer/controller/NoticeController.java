@@ -6,13 +6,12 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // 임시 주석
-import org.springframework.security.core.Authentication; // 임시 주석
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
@@ -21,11 +20,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/notices")
 @RequiredArgsConstructor
-// @CrossOrigin(origins = "*") // ✅ CORS 설정은 SecurityConfig에서 처리
 public class NoticeController {
 
     private final NoticeService noticeService;
-    // private final UserService userService; // 임시 주석
+    private final UserService userService;
 
     /**
      * 공지사항 전체 목록 (페이징 없음 - 유저용)
@@ -61,12 +59,16 @@ public class NoticeController {
     }
 
     /**
-     * 공지사항 생성 (테스트용)
+     * 공지사항 생성
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createNotice(@RequestBody NoticeRequest request) {
-        Long adminId = 1L; // 임시 하드코딩
+    public ResponseEntity<?> createNotice(
+            @RequestBody NoticeRequest request,
+            Authentication authentication) {
+
+        // ✅ 실제 관리자 ID 가져오기
+        Long adminId = getAdminId(authentication);
 
         Notice notice = noticeService.createNotice(
                 adminId,
@@ -78,15 +80,21 @@ public class NoticeController {
     }
 
     /**
-     * 공지사항 수정 (테스트용)
+     * 공지사항 수정
      */
     @PutMapping("/{noticeId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateNotice(
             @PathVariable Long noticeId,
-            @RequestBody NoticeRequest request) {
+            @RequestBody NoticeRequest request,
+            Authentication authentication) {
+
+        // ✅ 실제 관리자 ID 가져오기
+        Long adminId = getAdminId(authentication);
+
         Notice updated = noticeService.updateNotice(
                 noticeId,
+                adminId,
                 request.getTitle(),
                 request.getContent(),
                 request.getNoticeType().name());
@@ -95,23 +103,39 @@ public class NoticeController {
     }
 
     /**
-     * 공지사항 삭제 (테스트용)
+     * 공지사항 삭제
      */
     @DeleteMapping("/{noticeId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteNotice(@PathVariable Long noticeId) {
-        noticeService.deleteNotice(noticeId);
+    public ResponseEntity<?> deleteNotice(
+            @PathVariable Long noticeId,
+            Authentication authentication) {
+
+        // ✅ 실제 관리자 ID 가져오기
+        Long adminId = getAdminId(authentication);
+
+        noticeService.deleteNotice(noticeId, adminId);
         return ResponseEntity.ok(Map.of("message", "Notice deleted"));
     }
 
     /**
-     * 공지사항 고정/해제 (테스트용)
+     * 공지사항 고정/해제
      */
     @PutMapping("/{noticeId}/pin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> togglePin(@PathVariable Long noticeId) {
         Notice notice = noticeService.togglePin(noticeId);
         return ResponseEntity.ok(notice);
+    }
+
+    /**
+     * ✅ Authentication에서 관리자 ID 추출
+     */
+    private Long getAdminId(Authentication authentication) {
+        String email = authentication.getName();
+        User admin = userService.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+        return admin.getUserId();
     }
 
     static class NoticeRequest {

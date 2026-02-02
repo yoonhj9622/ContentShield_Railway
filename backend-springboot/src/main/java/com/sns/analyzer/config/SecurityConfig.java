@@ -85,7 +85,7 @@ public class SecurityConfig {
                                                 // 🔓 공개 엔드포인트 - 인증 없이 접근 가능
                                                 .requestMatchers("/api/auth/**").permitAll() // 로그인, 회원가입
                                                 .requestMatchers(GET, "/api/notices/**").permitAll() // 공지사항 조회
-
+                                                .requestMatchers("/api/test/**").permitAll()
                                                 .requestMatchers("/api/public/**").permitAll() // 기타 공개 API
                                                 .requestMatchers("/actuator/health").permitAll() // 헬스체크
 
@@ -109,12 +109,15 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                // 허용할 도메인 (프론트엔드 주소)
-                configuration.setAllowedOrigins(Arrays.asList(
-                                "http://localhost:3000", // React 기본 포트
-                                "http://localhost:3001", // React 대체 포트 (3001)
-                                "http://localhost:5173", // Vite 기본 포트
-                                "https://your-domain.com" // 실제 배포 도메인으로 변경
+                // #장소영~여기까지: allowCredentials=true일 때 allowedOrigins에 "*"가 섞이면 Spring이 예외를 던짐
+                // → allowedOrigins 대신 allowedOriginPatterns 사용 (localhost/배포 도메인 모두 안전)
+                configuration.setAllowedOriginPatterns(Arrays.asList(
+                                "http://localhost:3000",
+                                "http://localhost:3001",
+                                "http://localhost:5173"
+                // 배포 도메인 패턴이 필요하면 아래처럼 추가:
+                // "https://your-domain.com",
+                // "https://*.your-domain.com"
                 ));
 
                 // 허용할 HTTP 메서드

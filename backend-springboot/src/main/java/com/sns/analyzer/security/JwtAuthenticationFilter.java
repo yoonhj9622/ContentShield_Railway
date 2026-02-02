@@ -23,7 +23,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
 
-    private final CustomUserDetailsService customUserDetailsService; // ⭐ 수정: UserDetails 로드용 서비스 추가
+    // #장소영~ 권한(authorities) 포함 인증을 위해 UserDetails 로딩
+    private final CustomUserDetailsService customUserDetailsService;
 
     // ===== JWT 필터 예외 처리 =====
     @Override

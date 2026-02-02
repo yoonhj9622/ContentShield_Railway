@@ -10,11 +10,23 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+
     Optional<User> findByUsername(String username);
+
     List<User> findByStatus(User.UserStatus status);
+
     List<User> findByIsSuspended(Boolean isSuspended);
+
     List<User> findByIsFlagged(Boolean isFlagged);
+
     List<User> findByRole(User.UserRole role);
+
     Boolean existsByEmail(String email);
-    boolean existsByUsername(String username); 
+
+    boolean existsByUsername(String username);
+
+    // ==================== UserRepository.java (추가)장소영====================
+    long countByStatus(User.UserStatus status);
+
+    long countByIsFlagged(Boolean isFlagged);
 }

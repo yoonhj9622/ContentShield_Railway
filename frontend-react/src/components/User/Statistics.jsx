@@ -35,10 +35,10 @@ const Statistics = () => {
 
   // --- Data Mapping ---
   const statsCards = [
-    { title: 'Total Comments', value: stats.total?.toLocaleString() || '0', icon: Shield, color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-900/50' },
-    { title: 'Malicious Comments', value: stats.malicious?.toLocaleString() || '0', icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-900/50' },
-    { title: 'Safe Comments', value: stats.clean?.toLocaleString() || '0', icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-900/20', border: 'border-emerald-900/50' },
-    { title: 'Blacklisted Users', value: stats.blacklistCount?.toLocaleString() || '0', icon: UserX, color: 'text-slate-400', bg: 'bg-slate-800', border: 'border-slate-700' },
+    { title: '전체 댓글', value: stats.total?.toLocaleString() || '0', icon: Shield, color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-900/50' },
+    { title: '악성 댓글', value: stats.malicious?.toLocaleString() || '0', icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-900/50' },
+    { title: '안전 댓글', value: stats.clean?.toLocaleString() || '0', icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-900/20', border: 'border-emerald-900/50' },
+    { title: '블랙리스트 사용자 수', value: stats.blacklistCount?.toLocaleString() || '0', icon: UserX, color: 'text-slate-400', bg: 'bg-slate-800', border: 'border-slate-700' },
   ];
 
   // Category Colors
@@ -69,7 +69,7 @@ const Statistics = () => {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold text-white mb-2">📈 Statistics Overview</h2>
+        <h2 className="text-3xl font-bold text-white mb-2">📈 통계</h2>
         <p className="text-slate-400">전체 댓글 분석 및 사용자 활동 통계입니다. (Real-time DB Data)</p>
       </div>
 

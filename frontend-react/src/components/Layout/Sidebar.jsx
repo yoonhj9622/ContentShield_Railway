@@ -11,6 +11,7 @@ import {
   Bell,
   FileText,
   MessageSquare,
+  User,
   Lightbulb
 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
@@ -18,6 +19,9 @@ import { useAuthStore } from '../../stores/authStore'
 export default function Sidebar() {
   const location = useLocation()
   const { user } = useAuthStore()
+
+  const isAdminMode = location.pathname.startsWith('/admin')
+  const isAdmin = user?.role === 'ADMIN'
 
   const isActive = (path) => location.pathname === path
 
@@ -31,59 +35,62 @@ export default function Sidebar() {
 
   const userLinks = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/analysis', icon: FileSearch, label: 'AI Analysis' },
     { path: '/comments', icon: MessageSquare, label: 'Comments' },
     { path: '/blacklist', icon: UserX, label: 'Blacklist' },
-    { path: '/statistics', icon: BarChart3, label: 'Statistics' },
-    { path: '/aianalysis', icon: FileSearch, label: 'Comment Analysis' },
-    { path: '/writing', icon: Wand2, label: 'AI Assistant' },
+    { path: '/aiassistant', icon: Wand2, label: 'AI Assistant' },
+    { path: '/writing', icon: Wand2, label: 'AI Writing Assistant' },
     { path: '/suggestions', icon: Lightbulb, label: 'Suggestions' },
-    { path: '/profile', icon: Settings, label: 'Settings' },
-    { path: '/notices', icon: Bell, label: 'notices' },
+    { path: '/statistics', icon: BarChart3, label: 'Statistics' },
+    { path: '/profile', icon: User, label: 'Profile' },
+    { path: '/notices', icon: Bell, label: 'Notices' },
   ]
 
   const adminLinks = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
     { path: '/admin/users', icon: Users, label: 'User Management' },
-    { path: '/admin/notices', icon: Bell, label: 'Notices' },
+    { path: '/admin/notices', icon: Bell, label: 'Notice Management' },
     { path: '/admin/logs', icon: FileText, label: 'System Logs' },
-    { path: '/admin/suggestions', icon: MessageSquare, label: 'Suggestions' },
+    { path: '/admin/suggestions', icon: MessageSquare, label: 'Suggestion Management' },
   ]
 
+  const showUserMenu = !isAdmin || !isAdminMode
+  const showAdminMenu = isAdmin && isAdminMode
+
   return (
-    <div className="w-64 bg-slate-900 h-screen border-r-2 border-slate-700 shadow-xl shadow-slate-900/50">
+    <div className="w-64 bg-slate-950 h-screen border-r border-white/10">
       <div className="py-6 px-3">
-
-        {/* User Menu */}
-        <div className="px-3 mb-3">
-          <h3 className="text-xs font-semibold text-blue-500 uppercase tracking-wider">
-            User Menu
-          </h3>
-        </div>
-
-        <nav className="space-y-1">
-          {userLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={linkClass(link.path)}
-            >
-              <link.icon className="h-5 w-5 mr-3" />
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Admin Menu */}
-        {user?.role === 'ADMIN' && (
+        {showAdminMenu && (
           <>
-            <div className="px-3 mt-8 mb-3">
-              <h3 className="text-xs font-semibold text-red-500 uppercase tracking-wider">
+            <div className="px-3 mb-3">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Admin Menu
               </h3>
             </div>
-
             <nav className="space-y-1">
               {adminLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={linkClass(link.path)}
+                >
+                  <link.icon className="h-5 w-5 mr-3" />
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </>
+        )}
+
+        {showUserMenu && (
+          <>
+            <div className="px-3 mb-3">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                User Menu
+              </h3>
+            </div>
+            <nav className="space-y-1">
+              {userLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}

@@ -224,7 +224,7 @@ export default function WritingAssistant() {
       {/* 헤더 */}
       <h1 className="text-3xl font-bold flex items-center mb-6">
         <Wand2 className="h-7 w-7 mr-3 text-primary-500" />
-        AI Writing Assistant
+        AI 문장 템플릿
       </h1>
 
       {/* 탭 */}

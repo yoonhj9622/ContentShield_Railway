@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+// #장소영~여기까지: 비밀번호 해시 JSON 노출 방지
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -21,6 +24,8 @@ public class User {
     @Column(unique = true, nullable = false, length = 100)
     private String email;
 
+    // #장소영~여기까지: 응답(JSON)에서 passwordHash 제외
+    @JsonIgnore
     @Column(nullable = false)
     private String passwordHash;
 

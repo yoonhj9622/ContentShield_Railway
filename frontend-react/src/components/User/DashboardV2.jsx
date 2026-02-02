@@ -62,31 +62,61 @@ export default function DashboardV2() {
   }
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Shield, path: '/dashboard' },
-    { id: 'analysis', label: 'AI Analysis', icon: Search, path: '/aianalysis' },
-    { id: 'management', label: 'Comments', icon: MessageSquare, path: '/comments' },
-    { id: 'blacklist', label: 'Blacklist', icon: UserX, path: '/blacklist' },
-    { id: 'writing', label: 'AI Assistant', icon: Wand2, path: '/aiassistant' },
-    // { id: 'templates', label: 'Templates', icon: FileText, path: '/templates' },  // Removed by user request
-    { id: 'stats', label: 'Statistics', icon: Activity, path: '/statistics' },
-    { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
-    { id: 'notices', label: 'Notices', icon: Bell, path: '/notices' },
+    { id: 'dashboard', label: '대시보드', icon: Shield, path: '/dashboard' },
+    { id: 'analysis', label: 'AI 문장분석', icon: Search, path: '/aianalysis' },
+    { id: 'management', label: '댓글분석', icon: MessageSquare, path: '/comments' },
+    { id: 'blacklist', label: '블랙리스트', icon: UserX, path: '/blacklist' },
+    { id: 'writing', label: 'AI 문장 템플릿', icon: Wand2, path: '/aiassistant' },
+    { id: 'suggestions', label: '제안/건의', icon: Lightbulb, path: '/suggestions' },
+    { id: 'stats', label: '통계', icon: Activity, path: '/statistics' },
+    { id: 'profile', label: '설정', icon: User, path: '/profile' },
+    { id: 'notices', label: '공지사항', icon: Bell, path: '/notices' },
   ];
 
   // URL 경로에 따라 activeTab 결정
   const activeTab = menuItems.find(item => item.path === pathname)?.id || 'dashboard';
 
   return (
-    <div className="space-y-8">
-      {activeTab === 'dashboard' && <DashboardView />}
-      {activeTab === 'analysis' && <CommentAnalysisView />}
-      {activeTab === 'management' && <CommentManagementView />}
-      {activeTab === 'blacklist' && <BlacklistView />}
-      {activeTab === 'writing' && <TemplateManager />}
-      {/* {activeTab === 'templates' && <TemplateView />} */}
-      {activeTab === 'stats' && <StatisticsView />}
-      {activeTab === 'profile' && <ProfileSettings />}
-      {activeTab === 'notices' && <NoticeListView />}
+    <div className="flex min-h-screen bg-slate-950 text-slate-200 font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 backdrop-blur-xl hidden md:block">
+        <div className="p-8">
+          <h2 className="text-2xl font-black text-blue-500 flex items-center gap-2 tracking-tighter">
+            <Shield className="fill-blue-500/20" /> GUARD AI
+          </h2>
+        </div>
+        <nav className="px-4 space-y-2">
+          {menuItems.map(item => (
+            <RouterLink
+              key={item.id}
+              to={item.path}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === item.id
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
+                }`}
+            >
+              <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+              {item.label}
+            </RouterLink>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-8 overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950">
+        <div className="max-w-6xl mx-auto">
+          {activeTab === 'dashboard' && <DashboardView />}
+          {activeTab === 'analysis' && <CommentAnalysisView />}
+          {activeTab === 'management' && <CommentManagementView />}
+          {activeTab === 'blacklist' && <BlacklistView />}
+          {activeTab === 'writing' && <TemplateManager />}
+          {/* {activeTab === 'templates' && <TemplateView />} */}
+          {activeTab === 'stats' && <StatisticsView />}
+          {activeTab === 'profile' && <ProfileSettings />}
+          {activeTab === 'notices' && <NoticeListView />}
+          {pathname === '/' && <DashboardView />}
+        </div>
+      </main>
     </div>
   );
 }
@@ -366,7 +396,7 @@ function BlacklistView() {
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-bold text-white">🚫 Blacklist Management</h2>
+          <h2 className="text-2xl font-bold text-white">🚫 블랙리스트 / 차단단어</h2>
           <p className="text-slate-400 text-sm">차단된 사용자 및 단어를 관리합니다.</p>
         </div>
       </div>
@@ -938,7 +968,7 @@ function CommentAnalysisView() {
         <div className="inline-flex p-3 rounded-2xl bg-blue-600/10 text-blue-500 mb-2">
           <Search size={32} />
         </div>
-        <h2 className="text-3xl font-black text-white">AI Content Analysis</h2>
+        <h2 className="text-3xl font-black text-white">문장분석</h2>
         <p className="text-slate-400">문장의 맥락을 분석하여 유해성을 판별합니다.</p>
       </div>
 
