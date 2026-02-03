@@ -44,27 +44,19 @@ public class CommentService {
                 ? java.time.LocalDate.parse(endDateStr).atTime(23, 59, 59)
                 : LocalDateTime.now();
 
-        // 0. 기존 데이터 정리 (별도 트랜잭션으로 처리하여 락 점유 최소화)
-        transactionTemplate.execute(status -> {
-            try {
-                System.out.println("[DEBUG] Clearing COMMENTS table for user: " + userId + " (Keeping History)");
-                commentRepository.deleteByUserId(userId);
-                commentRepository.flush();
-                return null;
-            } catch (Exception e) {
-                System.err.println("[ERROR] Failed to cleanup data: " + e.getMessage());
-                return null;
-            }
-        });
+        // 0. 기존 데이터 정리 - 삭제 로직 제거됨 (증분 업데이트로 변경)
+        // transactionTemplate.execute(status -> { ... });
 
         // 1. Python AI 서버에 크롤링 요청
         List<Map<String, Object>> crawledComments = crawlYoutubeComments(url);
+        System.out.println("[DEBUG] Crawler returned " + crawledComments.size() + " comments");
 
         // 2. DB 저장 및 분석
         return transactionTemplate.execute(txStatus -> {
             int successCount = 0;
             int failCount = 0;
             int skippedCount = 0;
+            int dateSkipCount = 0;
 
             // 🔥 차단 단어 목록 미리 조회 (루프 최적화)
             List<BlockedWord> blockedWords = blockedWordService.getActiveBlockedWords(userId);
@@ -79,9 +71,23 @@ public class CommentService {
                     if (text == null || text.trim().isEmpty())
                         continue;
 
+                    // System.out.println("[DEBUG] Processing comment: externalId=" + externalId +
+                    // ", date=" + publishDateStr);
+
+                    // 🔥 중복 체크 (이미 수집된 댓글이면 건너뜀)
+                    if (externalId != null && !externalId.isEmpty()
+                            && commentRepository.existsByUserIdAndExternalCommentId(userId, externalId)) {
+                        skippedCount++;
+                        // System.out.println("[DEBUG] Skipping duplicate: " + externalId);
+                        continue;
+                    }
+
                     LocalDateTime commentedAt = parseRelativeDate(publishDateStr);
 
                     if (commentedAt.isBefore(limitStart) || commentedAt.isAfter(limitEnd)) {
+                        System.out.println("[DEBUG] Skipping date out of range: " + commentedAt + " (Limit: "
+                                + limitStart + " ~ " + limitEnd + ")");
+                        dateSkipCount++;
                         continue;
                     }
 
@@ -135,6 +141,7 @@ public class CommentService {
                     "totalCrawled", crawledComments.size(),
                     "savedCount", successCount,
                     "skippedCount", skippedCount,
+                    "dateSkipCount", dateSkipCount, // 🔥 기간 만료 카운트 추가
                     "failCount", failCount);
         });
     }

@@ -1533,7 +1533,11 @@ function CommentManagementView() {
       const crawlResult = await commentService.crawlAndAnalyze(url, startDate, endDate);
       setLastAnalyzedUrl(url);
       setAnalyzing(false);
-      setMessage({ type: 'success', text: `수집 완료: ${crawlResult.savedCount}개. 이제 순차적으로 분석을 시작합니다.` });
+      const { totalCrawled, savedCount, skippedCount, dateSkipCount } = crawlResult;
+      setMessage({
+        type: 'success',
+        text: `수집 완료: 총 ${totalCrawled}개 (신규: ${savedCount}, 중복: ${skippedCount || 0}, 기간지남: ${dateSkipCount || 0}).`
+      });
       await loadComments(url);
       triggerSequentialAnalysis(url, crawlResult.savedCount);
     } catch (error) {
@@ -1736,7 +1740,7 @@ function CommentManagementView() {
             {/* Date Picker Group */}
             <div className="lg:col-span-4 space-y-2">
               <label className="text-xs font-bold text-slate-400 flex items-center gap-2 ml-1">
-                <CalendarIcon size={12} /> ANALYSIS PERIOD (MAX 7 DAYS)
+                <CalendarIcon size={12} /> 분류 기간 설정 (최대 7일)
               </label>
               <div className={`flex items-center gap-2 h-11 px-3 rounded-xl border border-slate-800 bg-slate-950/50 group focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-500/50 transition-all ${analyzing ? 'opacity-50' : 'opacity-100'}`}>
                 <input
@@ -1772,7 +1776,7 @@ function CommentManagementView() {
                 ) : (
                   <Zap size={18} className="fill-current" />
                 )}
-                {analyzing ? 'Processing...' : 'Start Extraction'}
+                {analyzing ? '분류 중...' : '분류 시작'}
               </button>
             </div>
           </div>
@@ -1795,30 +1799,34 @@ function CommentManagementView() {
       <Card className="border-slate-800 bg-slate-900/20">
         <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
           <div className="space-y-1">
-            <CardTitle className="text-lg">Analysis History ({comments.length})</CardTitle>
+            <CardTitle className="text-lg">분석 이력 ({totalElements})</CardTitle>
             <p className="text-xs text-slate-400">수집된 데이터 중 현재 필터 조건에 맞는 목록입니다.</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
-              {['all', 'clean', 'malicious'].map(status => (
+              {[
+                { value: 'all', label: '전체' },
+                { value: 'clean', label: '안전' },
+                { value: 'malicious', label: '악성' }
+              ].map(option => (
                 <button
-                  key={status}
+                  key={option.value}
                   onClick={() => {
-                    setFilterStatus(status);
+                    setFilterStatus(option.value);
                     setCurrentPage(0);
                   }}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all uppercase ${filterStatus === status
+                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all uppercase ${filterStatus === option.value
                     ? 'bg-slate-800 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-300'
                     }`}
                 >
-                  {status}
+                  {option.label}
                 </button>
               ))}
             </div>
 
             <div className="px-3 py-1 rounded-full bg-slate-800 text-[10px] font-bold text-slate-400 border border-slate-700">
-              {comments.length} ITEMS {lastAnalyzedUrl ? 'FOR THIS VIDEO' : 'TOTAL'}
+              {lastAnalyzedUrl ? '현재 페이지' : '전체'} {comments.length}개
             </div>
 
             <button onClick={() => loadComments()} className="h-8 w-8 flex items-center justify-center p-0 rounded-full hover:bg-slate-800 text-slate-400 transition-all">
@@ -1832,7 +1840,7 @@ function CommentManagementView() {
                   onClick={handleDeleteSelected}
                   className="h-8 px-3 rounded-lg text-[10px] font-bold bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all animate-in fade-in"
                 >
-                  DELETE SELECTED ({selectedIds.length})
+                  선택항목 삭제 ({selectedIds.length})
                 </button>
               )}
               {comments.length > 0 && (
@@ -1840,7 +1848,7 @@ function CommentManagementView() {
                   onClick={handleDeleteAll}
                   className="h-8 px-3 rounded-lg text-[10px] font-bold border border-red-900/30 text-red-400 hover:bg-red-950/30 hover:text-red-300 transition-all"
                 >
-                  DELETE ALL
+                  전체삭제
                 </button>
               )}
             </div>
@@ -1859,16 +1867,16 @@ function CommentManagementView() {
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[15%]">Author</th>
-                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[50%]">Comment Content</th>
-                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[15%] text-center">Verdict</th>
-                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[10%] text-center">Date</th>
-                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[10%] text-right">Settings</th>
+                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[15%]">작성자</th>
+                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[50%]">작성 댓글</th>
+                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[15%] text-center">분류 결과</th>
+                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[10%] text-center">작성일</th>
+                  <th className="p-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter w-[10%] text-right">설정</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
                 {loading ? (
-                  <tr><td colSpan="6" className="p-20 text-center text-slate-600 text-sm animate-pulse tracking-widest">SCANNING DATA...</td></tr>
+                  <tr><td colSpan="6" className="p-20 text-center text-slate-600 text-sm animate-pulse tracking-widest">분석중...</td></tr>
                 ) : comments.length > 0 ? comments.map(comment => (
                   <tr key={comment.commentId} className={`transition-all group ${selectedIds.includes(comment.commentId) ? 'bg-blue-900/10' : 'hover:bg-blue-500/5'}`}>
                     <td className="p-4 align-top text-center">
@@ -1908,15 +1916,15 @@ function CommentManagementView() {
                     <td className="p-4 align-top text-center">
                       {!comment.isAnalyzed ? (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-500 text-[10px] font-black uppercase animate-pulse">
-                          <RefreshCw size={10} className="animate-spin" /> SCANNING...
+                          <RefreshCw size={10} className="animate-spin" /> 분석중...
                         </div>
                       ) : comment.isMalicious ? (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase">
-                          <AlertTriangle size={10} /> MALICIOUS
+                          <AlertTriangle size={10} /> 악성
                         </div>
                       ) : (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase">
-                          <CheckCircle size={10} /> CLEAN
+                          <CheckCircle size={10} /> 안전
                         </div>
                       )}
                     </td>
@@ -1980,11 +1988,12 @@ function CommentManagementView() {
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p className="text-xs text-slate-400">
-                Showing <span className="font-bold text-slate-200">{currentPage * pageSize + 1}</span> to{' '}
+                전체 <span className="font-bold text-slate-200">{totalElements}</span>개 중{' '}
+                <span className="font-bold text-slate-200">{currentPage * pageSize + 1}</span>
+                {' - '}
                 <span className="font-bold text-slate-200">
                   {Math.min((currentPage + 1) * pageSize, totalElements)}
-                </span> of{' '}
-                <span className="font-bold text-slate-200">{totalElements}</span> results
+                </span>
               </p>
             </div>
             <div>
