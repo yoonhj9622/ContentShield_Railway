@@ -25,8 +25,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // #장소영~ 권한(authorities) 포함 인증을 위해 UserDetails 로딩
     private final CustomUserDetailsService customUserDetailsService;
+    // #여기까지
 
-    // ===== JWT 필터 예외 처리 =====
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();

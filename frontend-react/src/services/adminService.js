@@ -51,4 +51,24 @@ export const adminService = {
     const response = await api.get('/admin/users/suspended')
     return response.data
   },
+
+  // 🆕 대시보드 통계
+  getDashboardStats: async () => {
+    const response = await api.get('/admin/dashboard/stats')
+    return response.data
+  },
+
+  // 🆕 최근 관리자 로그
+  getRecentLogs: async (limit = 10) => {
+    const response = await api.get('/admin/dashboard/recent-logs', {
+      params: { limit }
+    })
+    return response.data
+  },
+
+  // 🆕 월별 사용자 증가 통계
+  getMonthlyUserGrowth: async () => {
+    const response = await api.get('/admin/dashboard/user-growth')
+    return response.data
+  },
 }

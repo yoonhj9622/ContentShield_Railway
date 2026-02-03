@@ -78,10 +78,11 @@ export default function Suggestions() {
             <RouterLink
               key={item.id}
               to={item.path}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === item.id
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
-                }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === item.id
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                  : 'text-slate-500 hover:bg-slate-800 hover:text-slate-200'
+              }`}
             >
               <item.icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
               {item.label}

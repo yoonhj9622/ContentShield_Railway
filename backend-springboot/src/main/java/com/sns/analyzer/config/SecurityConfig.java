@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.Arrays;
 
 import static org.springframework.http.HttpMethod.GET;
@@ -101,6 +102,28 @@ public class SecurityConfig {
 
                 return http.build();
 
+                // ============================================
+                // 운영 모드: JWT 인증 활성화 (나중에 사용)
+                // ============================================
+                /*
+                 * http
+                 * .csrf(csrf -> csrf.disable())
+                 * .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                 * .sessionManagement(session ->
+                 * session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                 * )
+                 * .authorizeHttpRequests(auth -> auth
+                 * .requestMatchers("/api/auth/**").permitAll()
+                 * .requestMatchers("/api/notices/**").permitAll()
+                 * .requestMatchers("/api/public/**").permitAll()
+                 * .requestMatchers("/actuator/health").permitAll()
+                 * .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                 * .anyRequest().authenticated()
+                 * )
+                 * .authenticationProvider(authenticationProvider())
+                 * .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                 * return http.build();
+                 */
         }
 
         // [File: SecurityConfig.java / Date: 2026-01-22 / 설명: 프론트엔드 포트(3000, 3001) 및 인증
@@ -115,10 +138,11 @@ public class SecurityConfig {
                                 "http://localhost:3000",
                                 "http://localhost:3001",
                                 "http://localhost:5173"
-                // 배포 도메인 패턴이 필요하면 아래처럼 추가:
-                // "https://your-domain.com",
-                // "https://*.your-domain.com"
+                                // 배포 도메인 패턴이 필요하면 아래처럼 추가:
+                                // "https://your-domain.com",
+                                // "https://*.your-domain.com"
                 ));
+                // #여기까지
 
                 // 허용할 HTTP 메서드
                 configuration.setAllowedMethods(Arrays.asList(

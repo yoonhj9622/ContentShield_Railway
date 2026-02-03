@@ -25,27 +25,29 @@ public class AdminLogTestController {
     public ResponseEntity<?> createTestLog() {
         try {
             AdminLog testLog = AdminLog.builder()
-                    .adminId(9L)
-                    .actionType(AdminLog.ActionType.SUSPEND_USER)
-                    .targetType("User")
-                    .targetId(999L)
-                    .description("TEST LOG - " + LocalDateTime.now())
-                    .createdAt(LocalDateTime.now())
-                    .build();
-
+                .adminId(9L)
+                .actionType(AdminLog.ActionType.SUSPEND_USER)
+                .targetType("User")
+                .targetId(999L)
+                .description("TEST LOG - " + LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .build();
+            
             AdminLog saved = adminLogRepository.save(testLog);
             adminLogRepository.flush();
-
+            
             return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Test log created",
-                    "logId", saved.getLogId(),
-                    "createdAt", saved.getCreatedAt()));
+                "success", true,
+                "message", "Test log created",
+                "logId", saved.getLogId(),
+                "createdAt", saved.getCreatedAt()
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", e.getMessage(),
-                    "stackTrace", e.getStackTrace()[0].toString()));
+                "success", false,
+                "error", e.getMessage(),
+                "stackTrace", e.getStackTrace()[0].toString()
+            ));
         }
     }
 
@@ -57,13 +59,15 @@ public class AdminLogTestController {
         try {
             List<AdminLog> logs = adminLogRepository.findAll();
             return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "count", logs.size(),
-                    "logs", logs));
+                "success", true,
+                "count", logs.size(),
+                "logs", logs
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", e.getMessage()));
+                "success", false,
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -75,16 +79,18 @@ public class AdminLogTestController {
         try {
             LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
             List<AdminLog> logs = adminLogRepository.findByCreatedAtAfter(oneHourAgo);
-
+            
             return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "count", logs.size(),
-                    "logs", logs,
-                    "searchedFrom", oneHourAgo));
+                "success", true,
+                "count", logs.size(),
+                "logs", logs,
+                "searchedFrom", oneHourAgo
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", e.getMessage()));
+                "success", false,
+                "error", e.getMessage()
+            ));
         }
     }
 
@@ -96,14 +102,16 @@ public class AdminLogTestController {
         try {
             long count = adminLogRepository.count();
             return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Database connection OK",
-                    "totalLogs", count,
-                    "timestamp", LocalDateTime.now()));
+                "success", true,
+                "message", "Database connection OK",
+                "totalLogs", count,
+                "timestamp", LocalDateTime.now()
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
-                    "success", false,
-                    "error", e.getMessage()));
+                "success", false,
+                "error", e.getMessage()
+            ));
         }
     }
 }

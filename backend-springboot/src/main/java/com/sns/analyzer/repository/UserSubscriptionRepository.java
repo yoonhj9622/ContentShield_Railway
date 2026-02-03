@@ -4,12 +4,14 @@ package com.sns.analyzer.repository;
 import com.sns.analyzer.entity.UserSubscription;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 import java.util.List;
 import java.time.LocalDateTime;
 
 @Repository
 public interface UserSubscriptionRepository extends JpaRepository<UserSubscription, Long> {
+
     Optional<UserSubscription> findByUserId(Long userId);
 
     List<UserSubscription> findByPlanType(UserSubscription.PlanType planType);
@@ -20,4 +22,5 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
     List<UserSubscription> findByEndDateBefore(LocalDateTime dateTime);
 
     List<UserSubscription> findByAutoRenewAndNextPaymentDateBefore(Boolean autoRenew, LocalDateTime dateTime);
+    // #여기까지
 }

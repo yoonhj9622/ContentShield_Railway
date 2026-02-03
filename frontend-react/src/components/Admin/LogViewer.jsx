@@ -34,9 +34,9 @@ export default function LogViewer() {
             <option value="user">User Activity</option>
             <option value="system">System Logs</option>
           </select>
-
+          
           {/* ✅ 수동 새로고침 버튼 추가 */}
-          <button
+          <button 
             onClick={() => refetch()}
             className="px-4 py-2 bg-slate-800 border border-slate-700 rounded hover:bg-slate-700 flex items-center text-slate-200 transition-colors"
           >

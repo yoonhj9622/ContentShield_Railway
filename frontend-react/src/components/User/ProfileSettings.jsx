@@ -1,17 +1,31 @@
 // ==================== src/components/User/ProfileSettings.jsx (다크 테마 적용) ====================
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'  // 🆕 추가
 import { userService } from '../../services/userService'
+import { useAuthStore } from '../../stores/authStore'  // 🆕 추가
 import {
   User, Lock, Bell, Save, Camera, AlertCircle,
   CheckCircle, Loader2, Mail, Phone, MapPin, Briefcase,
-  Shield, Clock, TrendingUp, Smartphone
+  Shield, Clock, TrendingUp, Smartphone, AlertTriangle, Flag, Calendar
 } from 'lucide-react'
 
 export default function ProfileSettings() {
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState('profile')
+  const [searchParams] = useSearchParams()  // 🆕 URL 파라미터
+  const { user, isFlagged } = useAuthStore()  // 🆕 추가
+  
+  // 🆕 URL 파라미터로 탭 결정 (예: /profile?tab=warning)
+  const tabFromUrl = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState(tabFromUrl === 'warning' ? 'warning' : 'profile')
   const [toast, setToast] = useState(null)
+
+  // 🆕 URL 파라미터 변경 시 탭 업데이트
+  useEffect(() => {
+    if (tabFromUrl === 'warning') {
+      setActiveTab('warning')
+    }
+  }, [tabFromUrl])
 
   // 사용자 정보 조회
   const { data: userInfo, isLoading: userLoading } = useQuery({
@@ -103,6 +117,18 @@ export default function ProfileSettings() {
             >
               알림 설정
             </TabButton>
+            
+            {/* 🆕 주의 탭 (플래그된 사용자만 표시) */}
+            {isFlagged && (
+              <TabButton
+                active={activeTab === 'warning'}
+                onClick={() => setActiveTab('warning')}
+                icon={AlertTriangle}
+                highlight
+              >
+                ⚠️ 주의
+              </TabButton>
+            )}
           </nav>
         </div>
 
@@ -116,6 +142,10 @@ export default function ProfileSettings() {
           {activeTab === 'notifications' && (
             <NotificationsTab profile={profile} showToast={showToast} />
           )}
+          {/* 🆕 주의 탭 */}
+          {activeTab === 'warning' && (
+            <WarningTab user={user} />
+          )}
         </div>
       </div>
     </div>
@@ -123,16 +153,85 @@ export default function ProfileSettings() {
 }
 
 // ============================================
-// Tab Button Component
+// 🆕 Warning Tab (주의 탭)
 // ============================================
-function TabButton({ active, onClick, icon: Icon, children }) {
+function WarningTab({ user }) {
+  return (
+    <div className="space-y-6">
+      {/* 경고 헤더 */}
+      <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-6 h-6 text-yellow-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-yellow-400 mb-1">계정에 주의가 적용되었습니다</h3>
+            <p className="text-yellow-300/70 text-sm">
+              아래 내용을 확인하시고, 문의사항이 있으시면 고객센터로 연락해주세요.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 주의 상세 정보 */}
+      <div className="bg-slate-800/50 rounded-lg p-6 space-y-4">
+        <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <Flag className="w-5 h-5 text-yellow-400" />
+          주의 상세 정보
+        </h4>
+        
+        <div className="grid gap-4">
+          <div className="flex items-start gap-3 p-4 bg-slate-900/50 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-slate-400 text-sm">주의 사유</p>
+              <p className="text-white font-medium mt-1">
+                {user?.flagReason || '사유가 기록되지 않았습니다.'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 p-4 bg-slate-900/50 rounded-lg">
+            <Calendar className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-slate-400 text-sm">등록일</p>
+              <p className="text-white font-medium mt-1">
+                {user?.flaggedAt 
+                  ? new Date(user.flaggedAt).toLocaleString('ko-KR') 
+                  : '날짜 정보 없음'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 문의 안내 */}
+      <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-4">
+        <p className="text-slate-400 text-sm flex items-center gap-2">
+          <Mail className="w-4 h-4" />
+          문의: support@guardai.com
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// Tab Button Component (수정 - highlight 추가)
+// ============================================
+function TabButton({ active, onClick, icon: Icon, children, highlight }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center px-1 py-4 border-b-2 font-medium text-sm transition-colors ${active
-        ? 'border-blue-500 text-blue-400'
-        : 'border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700'
-        }`}
+      className={`flex items-center px-1 py-4 border-b-2 font-medium text-sm transition-colors ${
+        active
+          ? highlight 
+            ? 'border-yellow-500 text-yellow-400'
+            : 'border-blue-500 text-blue-400'
+          : highlight
+            ? 'border-transparent text-yellow-400/70 hover:text-yellow-400 hover:border-yellow-700'
+            : 'border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700'
+      }`}
     >
       <Icon className="h-5 w-5 mr-2" />
       {children}
@@ -162,7 +261,7 @@ function ProfileTab({ profile, showToast }) {
         bio: profile.bio || '',
         companyName: profile.companyName || '',
         location: profile.location || '',
-        profileImageUrl: profile.profileImageUrl || '', // ⭐ 이미지 URL 포함
+        profileImageUrl: profile.profileImageUrl || '',
       })
       setPreviewImage(profile.profileImageUrl)
     }
@@ -195,7 +294,6 @@ function ProfileTab({ profile, showToast }) {
       reader.onloadend = () => {
         const imageData = reader.result
         setPreviewImage(imageData)
-        // ⭐ 함수형 업데이트로 안전하게 추가
         setFormData(prev => ({ ...prev, profileImageUrl: imageData }))
       }
       reader.readAsDataURL(file)
@@ -203,7 +301,7 @@ function ProfileTab({ profile, showToast }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-h-[600px] overflow-y-auto pr-2">
+    <form onSubmit={handleSubmit} className="space-y-6 max-h-[600px] pr-2">
       {/* Profile Image */}
       <div className="flex items-center space-x-6">
         <div className="relative">
@@ -243,7 +341,6 @@ function ProfileTab({ profile, showToast }) {
           onChange={(value) => setFormData({ ...formData, fullName: value })}
           placeholder="홍길동"
         />
-
         <FormField
           label="전화번호"
           icon={Phone}
@@ -251,7 +348,6 @@ function ProfileTab({ profile, showToast }) {
           onChange={(value) => setFormData({ ...formData, phone: value })}
           placeholder="010-1234-5678"
         />
-
         <FormField
           label="회사"
           icon={Briefcase}
@@ -259,9 +355,8 @@ function ProfileTab({ profile, showToast }) {
           onChange={(value) => setFormData({ ...formData, companyName: value })}
           placeholder="회사명"
         />
-
         <FormField
-          label="지역"
+          label="위치"
           icon={MapPin}
           value={formData.location}
           onChange={(value) => setFormData({ ...formData, location: value })}
@@ -269,43 +364,37 @@ function ProfileTab({ profile, showToast }) {
         />
       </div>
 
+      {/* Bio */}
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-2">
-          소개
+          자기소개
         </label>
         <textarea
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          rows={4}
-          maxLength={500}
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none placeholder:text-slate-600"
-          placeholder="자기소개를 입력하세요..."
+          rows={3}
+          placeholder="간단한 자기소개를 작성해주세요"
+          className="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent placeholder:text-slate-600 resize-none"
         />
-        <p className="text-xs text-slate-400 mt-1">
-          {formData.bio.length} / 500 자
-        </p>
       </div>
 
-      {/* Submit Button - 항상 보이도록 고정 */}
-      <div className="sticky bottom-0 bg-slate-900 pt-4 pb-2 border-t border-slate-800 -mx-2 px-2 flex justify-end">
-        <button
-          type="submit"
-          disabled={updateMutation.isLoading}
-          className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors shadow-lg shadow-blue-600/20"
-        >
-          {updateMutation.isLoading ? (
-            <>
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              저장 중...
-            </>
-          ) : (
-            <>
-              <Save className="h-5 w-5 mr-2" />
-              변경사항 저장
-            </>
-          )}
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={updateMutation.isLoading}
+        className="w-full md:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-lg shadow-blue-600/20"
+      >
+        {updateMutation.isLoading ? (
+          <>
+            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+            저장 중...
+          </>
+        ) : (
+          <>
+            <Save className="h-5 w-5 mr-2" />
+            변경사항 저장
+          </>
+        )}
+      </button>
     </form>
   )
 }
@@ -322,44 +411,25 @@ function PasswordTab({ showToast }) {
   const [errors, setErrors] = useState({})
 
   const changeMutation = useMutation({
-    mutationFn: ({ currentPassword, newPassword }) =>
-      userService.changePassword(currentPassword, newPassword),
+    mutationFn: (data) => userService.changePassword(data),
     onSuccess: () => {
       showToast('비밀번호가 성공적으로 변경되었습니다', 'success')
       setPasswords({ current: '', new: '', confirm: '' })
-      setErrors({})
     },
     onError: (error) => {
       showToast(error.response?.data?.error || '비밀번호 변경에 실패했습니다', 'error')
     },
   })
 
-  const validatePassword = (password) => {
-    if (password.length < 8) {
-      return '비밀번호는 최소 8자 이상이어야 합니다'
-    }
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      return '대문자, 소문자, 숫자를 포함해야 합니다'
-    }
-    return null
-  }
-
   const handleSubmit = (e) => {
     e.preventDefault()
-
     const newErrors = {}
 
-    if (!passwords.current) {
-      newErrors.current = '현재 비밀번호를 입력하세요'
+    if (passwords.new.length < 8) {
+      newErrors.new = '비밀번호는 최소 8자 이상이어야 합니다'
     }
-
-    const passwordError = validatePassword(passwords.new)
-    if (passwordError) {
-      newErrors.new = passwordError
-    }
-
     if (passwords.new !== passwords.confirm) {
-      newErrors.confirm = '비밀번호가 일치하지 않습니다'
+      newErrors.confirm = '새 비밀번호가 일치하지 않습니다'
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -437,7 +507,7 @@ function PasswordTab({ showToast }) {
 }
 
 // ============================================
-// Notifications Tab (간단 버전)
+// Notifications Tab
 // ============================================
 function NotificationsTab({ profile, showToast }) {
   const queryClient = useQueryClient()

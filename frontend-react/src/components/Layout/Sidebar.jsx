@@ -1,4 +1,3 @@
-// ==================== src/components/Layout/Sidebar.jsx ====================
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -13,6 +12,7 @@ import {
   MessageSquare,
   User,
   Lightbulb
+
 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 
@@ -26,8 +26,7 @@ export default function Sidebar() {
   const isActive = (path) => location.pathname === path
 
   const linkClass = (path) => {
-    const base =
-      'flex items-center px-4 py-3 text-sm font-medium transition-all rounded-lg'
+    const base = 'flex items-center px-4 py-3 text-sm font-medium transition-all rounded-lg'
     return isActive(path)
       ? `${base} bg-primary-600/20 text-primary-400`
       : `${base} text-slate-400 hover:bg-white/5 hover:text-slate-200`
@@ -49,9 +48,9 @@ export default function Sidebar() {
   const adminLinks = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
     { path: '/admin/users', icon: Users, label: 'User Management' },
-    { path: '/admin/notices', icon: Bell, label: 'Notice Management' },
+    { path: '/admin/notices', icon: Bell, label: 'Notices' },
     { path: '/admin/logs', icon: FileText, label: 'System Logs' },
-    { path: '/admin/suggestions', icon: MessageSquare, label: 'Suggestion Management' },
+    { path: '/admin/suggestions', icon: MessageSquare, label: 'Suggestions' },
   ]
 
   const showUserMenu = !isAdmin || !isAdminMode

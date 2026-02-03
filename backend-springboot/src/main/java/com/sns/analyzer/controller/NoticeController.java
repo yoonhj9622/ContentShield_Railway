@@ -66,7 +66,7 @@ public class NoticeController {
     public ResponseEntity<?> createNotice(
             @RequestBody NoticeRequest request,
             Authentication authentication) {
-
+        
         // ✅ 실제 관리자 ID 가져오기
         Long adminId = getAdminId(authentication);
 
@@ -88,10 +88,10 @@ public class NoticeController {
             @PathVariable Long noticeId,
             @RequestBody NoticeRequest request,
             Authentication authentication) {
-
+        
         // ✅ 실제 관리자 ID 가져오기
         Long adminId = getAdminId(authentication);
-
+        
         Notice updated = noticeService.updateNotice(
                 noticeId,
                 adminId,
@@ -110,10 +110,10 @@ public class NoticeController {
     public ResponseEntity<?> deleteNotice(
             @PathVariable Long noticeId,
             Authentication authentication) {
-
+        
         // ✅ 실제 관리자 ID 가져오기
         Long adminId = getAdminId(authentication);
-
+        
         noticeService.deleteNotice(noticeId, adminId);
         return ResponseEntity.ok(Map.of("message", "Notice deleted"));
     }

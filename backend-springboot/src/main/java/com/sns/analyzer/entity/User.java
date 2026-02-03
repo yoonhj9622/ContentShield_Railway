@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 // #장소영~여기까지: 비밀번호 해시 JSON 노출 방지
 import com.fasterxml.jackson.annotation.JsonIgnore;
+// #여기까지
 
 @Entity
 @Table(name = "users")
@@ -26,6 +27,7 @@ public class User {
 
     // #장소영~여기까지: 응답(JSON)에서 passwordHash 제외
     @JsonIgnore
+    // #여기까지
     @Column(nullable = false)
     private String passwordHash;
 

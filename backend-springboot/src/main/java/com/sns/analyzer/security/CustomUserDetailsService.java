@@ -35,8 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // #장소영~ 시나리오 요구사항 반영
         // - SUSPENDED는 "로그인은 되지만 서비스 이용 불가"여야 하므로 login 자체를 잠그지 않음
         // - INACTIVE/DELETED만 로그인 자체를 막음
-        boolean disabled = (user.getStatus() == User.UserStatus.INACTIVE
-                || user.getStatus() == User.UserStatus.DELETED);
+        boolean disabled = (user.getStatus() == User.UserStatus.INACTIVE || user.getStatus() == User.UserStatus.DELETED);
         // #여기까지
 
         return org.springframework.security.core.userdetails.User.builder()

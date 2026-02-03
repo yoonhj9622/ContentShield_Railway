@@ -2,6 +2,7 @@
 /** [File: DashboardV2.jsx / Date: 2026-01-22 / 작성자: Antigravity / 설명: 대시보드 메뉴별 독립적 Top-level URL 라우팅 적용 및 30초 간격 실시간 데이터 자동 갱신(setInterval) 로직 추가] */
 /** [File: DashboardV2.jsx / Date: 2026-01-22 / 작성자: 윤혜정 / 설명: AI 분석 연동 및 프로필 관리 기능 추가] */
 /** [File: DashboardV2.jsx / Date: 2026-01-29 / 작성자: 원종성 / 설명: 대시보드 페이지 공지사항 표시 기능 추가 및 공지사항 리스트 페이지 추가] */
+/** [File: DashboardV2.jsx / Date: 2026-01-29 / 작성자: 원종성 / 설명: 대시보드 페이지 공지사항 표시 기능 추가 및 공지사항 리스트 페이지 추가] */
 import { blockedWordService } from '../../services/blockedWordService';
 import React, { useState, useEffect } from 'react';
 import { userService } from '../../services/userService';
@@ -222,7 +223,7 @@ function DashboardView() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <header>
-        <h1 className="text-3xl font-bold text-white">🖥️ System Overview</h1>
+        <h1 className="text-3xl font-bold text-white">🖥️ 대시보드</h1>
         <p className="text-slate-400">실시간 보안 및 댓글 분석 현황입니다.</p>
       </header>
 
@@ -968,7 +969,7 @@ function CommentAnalysisView() {
         <div className="inline-flex p-3 rounded-2xl bg-blue-600/10 text-blue-500 mb-2">
           <Search size={32} />
         </div>
-        <h2 className="text-3xl font-black text-white">문장분석</h2>
+        <h2 className="text-3xl font-black text-white">AI 문장분석</h2>
         <p className="text-slate-400">문장의 맥락을 분석하여 유해성을 판별합니다.</p>
       </div>
 
@@ -1675,7 +1676,7 @@ function CommentManagementView() {
             <div className="p-2 rounded-lg bg-red-600/10 text-red-500">
               <Youtube size={20} />
             </div>
-            <h2 className="text-2xl font-bold text-white">YouTube Insight</h2>
+            <h2 className="text-2xl font-bold text-white">YouTube 댓글분석</h2>
           </div>
           <p className="text-slate-400 text-sm">영상 URL과 기간을 설정하여 악성 댓글을 정밀 탐색합니다.</p>
         </div>

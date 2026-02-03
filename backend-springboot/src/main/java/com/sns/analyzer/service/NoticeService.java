@@ -18,7 +18,7 @@ import java.util.List;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
-    private final AdminService adminService; // ✅ AdminService 주입
+    private final AdminService adminService;  // ✅ AdminService 주입
 
     /**
      * 공지사항 생성
@@ -26,7 +26,7 @@ public class NoticeService {
     @Transactional
     public Notice createNotice(Long adminId, String title, String content, String noticeType) {
         log.info("🔵 createNotice called - adminId: {}, title: {}", adminId, title);
-
+        
         Notice notice = Notice.builder()
                 .adminId(adminId)
                 .title(title)
@@ -35,17 +35,17 @@ public class NoticeService {
                 .build();
 
         Notice saved = noticeRepository.save(notice);
-
         log.info("✅ Notice created successfully - noticeId: {}", saved.getNoticeId());
-
+        
         // ✅ 관리자 로그 기록
         adminService.logAdminAction(
-                adminId,
-                AdminLog.ActionType.CREATE_NOTICE,
-                "Notice",
-                saved.getNoticeId(),
-                String.format("Created notice: %s (Type: %s)", title, noticeType));
-
+            adminId, 
+            AdminLog.ActionType.CREATE_NOTICE, 
+            "Notice", 
+            saved.getNoticeId(),
+            String.format("Created notice: %s (Type: %s)", title, noticeType)
+        );
+        
         return saved;
     }
 
@@ -67,7 +67,7 @@ public class NoticeService {
 
         // 조회수 증가
         notice.setViewCount(notice.getViewCount() + 1);
-
+        
         return noticeRepository.save(notice);
     }
 
@@ -77,12 +77,12 @@ public class NoticeService {
     @Transactional
     public Notice updateNotice(Long noticeId, Long adminId, String title, String content, String noticeType) {
         log.info("🔵 updateNotice called - noticeId: {}, adminId: {}", noticeId, adminId);
-
+        
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
         StringBuilder changes = new StringBuilder("Updated notice: ");
-
+        
         if (title != null && !title.equals(notice.getTitle())) {
             notice.setTitle(title);
             changes.append("title, ");
@@ -98,15 +98,16 @@ public class NoticeService {
 
         Notice updated = noticeRepository.save(notice);
         log.info("✅ Notice updated successfully - noticeId: {}", noticeId);
-
+        
         // ✅ 관리자 로그 기록
         adminService.logAdminAction(
-                adminId,
-                AdminLog.ActionType.UPDATE_NOTICE,
-                "Notice",
-                noticeId,
-                changes.toString());
-
+            adminId,
+            AdminLog.ActionType.UPDATE_NOTICE,
+            "Notice",
+            noticeId,
+            changes.toString()
+        );
+        
         return updated;
     }
 
@@ -116,22 +117,23 @@ public class NoticeService {
     @Transactional
     public void deleteNotice(Long noticeId, Long adminId) {
         log.info("🔵 deleteNotice called - noticeId: {}, adminId: {}", noticeId, adminId);
-
+        
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
-
+        
         String noticeTitle = notice.getTitle();
-
+        
         noticeRepository.deleteById(noticeId);
         log.info("✅ Notice deleted successfully - noticeId: {}", noticeId);
-
+        
         // ✅ 관리자 로그 기록
         adminService.logAdminAction(
-                adminId,
-                AdminLog.ActionType.DELETE_NOTICE,
-                "Notice",
-                noticeId,
-                "Deleted notice: " + noticeTitle);
+            adminId,
+            AdminLog.ActionType.DELETE_NOTICE,
+            "Notice",
+            noticeId,
+            "Deleted notice: " + noticeTitle
+        );
     }
 
     /**

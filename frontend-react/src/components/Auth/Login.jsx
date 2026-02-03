@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../services/authService'
+import { AlertCircle } from 'lucide-react'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -12,36 +13,40 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // 하나의 handleSubmit 함수로 로직을 통합합니다.
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError('');  // 제출할 때만 에러 초기화
     setLoading(true);
 
     try {
-      // 1. 서버에 로그인 요청
       const data = await authService.login(email, password);
       console.log("1. 서버 응답 성공:", data);
 
-      // 2. Zustand 스토어에 데이터 저장
-      // 서버 응답 구조(data.role 등)에 따라 적절히 매핑합니다.
       const userRole = data.role || 'USER';
+
       await setAuth(
         {
           userId: data.user_id || data.userId,
           email: data.email,
           username: data.username,
           role: userRole,
+          isSuspended: data.isSuspended || false,
+          suspensionReason: data.suspensionReason || '',
+          suspendedAt: data.suspendedAt || '',
+          isFlagged: data.isFlagged || false,
+          flagReason: data.flagReason || '',
+          flaggedAt: data.flaggedAt || '',
         },
         data.token
       );
 
-      console.log("2. 상태 저장 완료, 역할 확인:", userRole);
+      console.log("2. 상태 저장 완료, 역할:", userRole, "정지:", data.isSuspended, "주의:", data.isFlagged);
 
-      // 3. 안전장치 후 역할별 페이지 이동
       setTimeout(() => {
-        // 🔥 역할별 자동 분기 로직 통합
-        if (userRole === 'ADMIN') {
+        if (data.isSuspended) {
+          console.log("3. 정지된 사용자 - 대시보드로 이동");
+          navigate('/dashboard', { replace: true });
+        } else if (userRole === 'ADMIN') {
           console.log("3. 관리자 페이지로 이동");
           navigate('/admin/dashboard', { replace: true });
         } else {
@@ -49,13 +54,16 @@ export default function Login() {
           navigate('/dashboard', { replace: true });
         }
       }, 100);
+
     } catch (err) {
-      console.error("로그인 시 실패 로그:", err);
-      // 서버에서 전달하는 에러 메시지가 있으면 사용하고, 없으면 기본 메시지 출력
-      setError(err.response?.data?.message || err.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
-    } finally {
-      setLoading(false);
+      console.error("로그인 실패:", err);
+      const errorMessage = err.response?.data?.error || '로그인에 실패했습니다. 다시 시도해주세요.';
+      setError(errorMessage);
+      setLoading(false);  // 🆕 여기서 loading 해제
+      return;  // 🆕 여기서 종료
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -65,7 +73,14 @@ export default function Login() {
           <h2 className="text-center text-3xl font-extrabold text-gray-900">로그인</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && <div className="text-red-500 text-sm text-center font-bold">{error}</div>}
+          {/* 에러 메시지 박스 */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-700 font-medium text-sm">{error}</p>
+            </div>
+          )}
+          
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <input

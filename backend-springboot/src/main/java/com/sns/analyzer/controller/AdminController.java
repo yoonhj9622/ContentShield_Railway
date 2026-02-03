@@ -16,8 +16,7 @@ import java.util.stream.Collectors; // #장소영~여기까지: DTO 변환용
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-// #장소영~여기까지: allowCredentials=true 환경에서 @CrossOrigin(origins="*")는 Spring이 예외
-// 던져서 500 발생
+// #장소영~여기까지: allowCredentials=true 환경에서 @CrossOrigin(origins="*")는 Spring이 예외 던져서 500 발생
 // → 컨트롤러 CORS는 제거하고, SecurityConfig의 CORS 설정만 사용하도록 통일
 // @CrossOrigin(origins = "*")
 // #여기까지
@@ -27,8 +26,7 @@ public class AdminController {
     private final AdminService adminService;
     private final UserService userService;
 
-    // ==================== #장소영~여기까지: AdminUserDto 추가 (User 엔티티 직접 반환으로 인한 500 방지)
-    // ====================
+    // ==================== #장소영~여기까지: AdminUserDto 추가 (User 엔티티 직접 반환으로 인한 500 방지) ====================
     static class AdminUserDto {
         public Long userId;
         public String email;
@@ -97,7 +95,8 @@ public class AdminController {
     public ResponseEntity<?> suspendUser(
             @PathVariable Long userId,
             @RequestBody SuspendRequest request,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         Long adminId = getAdminId(authentication);
 
         adminService.suspendUser(userId, adminId, request.getReason(), request.getDays());
@@ -111,7 +110,8 @@ public class AdminController {
     @PutMapping("/users/{userId}/unsuspend")
     public ResponseEntity<?> unsuspendUser(
             @PathVariable Long userId,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         Long adminId = getAdminId(authentication);
 
         adminService.unsuspendUser(userId, adminId);
@@ -126,7 +126,8 @@ public class AdminController {
     public ResponseEntity<?> flagUser(
             @PathVariable Long userId,
             @RequestBody Map<String, String> body,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         Long adminId = getAdminId(authentication);
 
         adminService.flagUser(userId, adminId, body.get("reason"));
@@ -140,7 +141,8 @@ public class AdminController {
     @PutMapping("/users/{userId}/unflag")
     public ResponseEntity<?> unflagUser(
             @PathVariable Long userId,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         Long adminId = getAdminId(authentication);
 
         adminService.unflagUser(userId, adminId);
@@ -153,7 +155,8 @@ public class AdminController {
      */
     @GetMapping("/logs/admin")
     public ResponseEntity<List<AdminLog>> getAdminLogs(
-            @RequestParam(required = false) Long adminId) {
+            @RequestParam(required = false) Long adminId
+    ) {
         return ResponseEntity.ok(adminService.getAdminLogs(adminId));
     }
 
@@ -162,7 +165,8 @@ public class AdminController {
      */
     @GetMapping("/logs/activity")
     public ResponseEntity<List<UserActivityLog>> getUserActivityLogs(
-            @RequestParam(required = false) Long userId) {
+            @RequestParam(required = false) Long userId
+    ) {
         return ResponseEntity.ok(adminService.getUserActivityLogs(userId));
     }
 
@@ -203,25 +207,14 @@ public class AdminController {
         private String reason;
         private Integer days;
 
-        public String getReason() {
-            return reason;
-        }
+        public String getReason() { return reason; }
+        public Integer getDays() { return days; }
 
-        public Integer getDays() {
-            return days;
-        }
-
-        public void setReason(String reason) {
-            this.reason = reason;
-        }
-
-        public void setDays(Integer days) {
-            this.days = days;
-        }
+        public void setReason(String reason) { this.reason = reason; }
+        public void setDays(Integer days) { this.days = days; }
     }
 
-    // ==================== AdminController.java (추가->통계랑 로그)
-    // 장소영====================
+    // ==================== AdminController.java (추가->통계랑 로그) 장소영====================
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<?> getDashboardStats() {
@@ -231,5 +224,13 @@ public class AdminController {
     @GetMapping("/dashboard/recent-logs")
     public ResponseEntity<?> getRecentLogs(@RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(adminService.getRecentAdminLogs(limit));
+    }
+
+        /**
+     * 🆕 월별 사용자 증가 통계
+     */
+    @GetMapping("/dashboard/user-growth")
+    public ResponseEntity<?> getMonthlyUserGrowth() {
+        return ResponseEntity.ok(adminService.getMonthlyUserGrowth());
     }
 }
