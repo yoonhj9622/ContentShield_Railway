@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
@@ -56,4 +60,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         Page<Comment> findByUserIdAndContentUrlAndIsMaliciousAndCommentedAtBetween(Long userId, String url,
                         Boolean isMalicious, java.time.LocalDateTime start, java.time.LocalDateTime end,
                         Pageable pageable);
+
+        // 🔥 자동 삭제를 위한 쿼리
+        @Modifying
+        @Transactional
+        @Query("DELETE FROM Comment c WHERE c.isMalicious = false AND c.commentedAt < :cutoff")
+        int deleteCommonCommentsBefore(LocalDateTime cutoff);
+
+        @Modifying
+        @Transactional
+        @Query("DELETE FROM Comment c WHERE c.isMalicious = true AND c.commentedAt < :cutoff")
+        int deleteMaliciousCommentsBefore(LocalDateTime cutoff);
 }

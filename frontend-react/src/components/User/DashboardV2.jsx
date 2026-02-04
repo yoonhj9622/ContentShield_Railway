@@ -277,7 +277,7 @@ function DashboardView() {
                         {notice.title}
                       </span>
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${getNoticeTypeColor(notice.noticeType)}`}>
-                        {notice.noticeType}
+                        {getTypeLabel(notice.noticeType)}
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 line-clamp-2 group-hover:text-slate-300 transition-colors">
@@ -298,14 +298,14 @@ function DashboardView() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard title="Total" value={stats.total.toLocaleString()} icon={Shield} color="text-blue-400" />
-        <StatCard title="Malicious" value={stats.malicious.toLocaleString()} icon={AlertTriangle} color="text-red-400" />
-        <StatCard title="Clean" value={stats.clean.toLocaleString()} icon={CheckCircle} color="text-emerald-400" />
-        <StatCard title="Detection" value={stats.detectionRate} icon={TrendingUp} color="text-amber-400" />
+        <StatCard title="전체" value={stats.total.toLocaleString()} icon={Shield} color="text-blue-400" />
+        <StatCard title="악성" value={stats.malicious.toLocaleString()} icon={AlertTriangle} color="text-red-400" />
+        <StatCard title="정상" value={stats.clean.toLocaleString()} icon={CheckCircle} color="text-emerald-400" />
+        <StatCard title="탐지율" value={stats.detectionRate} icon={TrendingUp} color="text-amber-400" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-3">
           <CardHeader><CardTitle>주간 분석 추이</CardTitle></CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -320,20 +320,6 @@ function DashboardView() {
                 <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            {stats.notifications.length > 0 ? stats.notifications.map((note, i) => (
-              <div key={note.id || i} className="flex gap-3 p-3 rounded-lg bg-slate-950/50 border border-slate-800">
-                <div className={`h-2 w-2 rounded-full mt-2 ${note.isMalicious ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                <div>
-                  <p className="text-sm font-medium">{note.isMalicious ? '악성' : '클린'} 댓글 감지 ({note.category})</p>
-                  <p className="text-xs text-slate-400">{new Date(note.analyzedAt).toLocaleString()}</p>
-                </div>
-              </div>
-            )) : <p className="text-center text-slate-400 text-sm py-10">알림 내역이 없습니다.</p>}
           </CardContent>
         </Card>
       </div>
@@ -648,10 +634,10 @@ function BlockedUsersTab() {
             <table className="w-full text-left">
               <thead className="bg-slate-800/50 text-slate-400 text-xs font-bold uppercase tracking-wider">
                 <tr>
-                  <th className="p-4">User Info</th>
-                  <th className="p-4">Violations</th>
-                  <th className="p-4">Reason</th>
-                  <th className="p-4">Comment</th>
+                  <th className="p-4">유저 정보</th>
+                  <th className="p-4">위반 횟수</th>
+                  <th className="p-4">사유</th>
+                  <th className="p-4">댓글</th>
                   <th className="p-4 text-right">등록일시</th>
                   <th className="p-4 text-right">해제</th>
                 </tr>
@@ -1025,7 +1011,19 @@ function CommentAnalysisView() {
             <div className="flex items-center gap-2">
               <span className="text-slate-400">카테고리:</span>
               <span className="px-3 py-1 rounded-full bg-blue-600/20 text-blue-400 text-sm font-bold">
-                {result.category}
+                {(() => {
+                  const categoryMap = {
+                    'PROFANITY': '욕설',
+                    'HATE': '혐오표현',
+                    'VIOLENCE': '폭력성',
+                    'THREAT': '협박',
+                    'SEXUAL': '성적희롱',
+                    'SPAM': '스팸',
+                    'CLEAN': '정상'
+                  };
+                  // 대문자로 변환해서 비교하여 정확도를 높임
+                  return categoryMap[result.category?.toUpperCase()] || result.category;
+                })()}
               </span>
             </div>
 
@@ -1826,7 +1824,7 @@ function CommentManagementView() {
             </div>
 
             <div className="px-3 py-1 rounded-full bg-slate-800 text-[10px] font-bold text-slate-400 border border-slate-700">
-              {lastAnalyzedUrl ? '현재 페이지' : '전체'} {comments.length}개
+              현재 페이지 {comments.length}개
             </div>
 
             <button onClick={() => loadComments()} className="h-8 w-8 flex items-center justify-center p-0 rounded-full hover:bg-slate-800 text-slate-400 transition-all">
