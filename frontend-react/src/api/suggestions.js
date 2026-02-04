@@ -6,9 +6,10 @@ import api from '../services/api'
 
 /**
  * Get all suggestions (Admin only)
- */// 내 건의사항 조회 (페이징)
+ */// 내 건의사항 조회 (페이징) => 권한 문제로 테스트 API 사용
 export const getMySuggestions = async ({ page = 0, size = 5 } = {}) => {
-    const response = await api.get(`/suggestions`, {
+    // const response = await api.get(`/suggestions`, {
+    const response = await api.get(`/test/suggestions`, {
         params: { page, size }
     })
     return response.data

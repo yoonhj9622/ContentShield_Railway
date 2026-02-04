@@ -533,34 +533,47 @@ Respond in valid JSON format only, no markdown:
         if "sexual_content" in violated_cats:
             sexual = max(sexual, 85)
         
+        # 1. 악성 판정 기준 (is_malicious) 수정
+        # 너무 민감한 '0점 초과' 정책을 15점으로 현실화하고, 
+        # 각 항목별 최소 기준 중 하나만 넘어도 악성으로 간주합니다.
         is_malicious = (
-            toxicity > 0 or  # STRICT POLICY: Any score > 0 is malicious
-            hate_speech > 60.0 or
-            profanity > 70.0 or
-            threat > 40.0 or
-            violence > 60.0 or
-            sexual > 70.0 or
-            not guard_result.get("is_safe", True) or
+            toxicity > 15 or 
+            hate_speech > 15 or 
+            profanity > 20 or 
+            threat > 20 or 
+            violence > 20 or 
+            sexual > 20 or 
+            not guard_result.get("is_safe", True) or 
             rule_result["is_malicious_rule"]
         )
-        
-        if violence > 70:
-            category = "violence"
-        elif sexual > 70:
-            category = "sexual_content"
-        elif threat > 60:
-            category = "threat"
-        elif hate_speech > 60:
-            category = "hate_speech"
-        elif profanity > 70:
-            category = "profanity"
-        elif toxicity > 70:
-            category = "highly_toxic"
-        elif toxicity > 0:  # STRICT POLICY
-            category = "moderately_toxic"
+
+        # 2. 카테고리 결정 로직 (가장 핵심적인 수정)
+        # 고정된 높은 임계값(60, 35 등)을 사용하기 전에, 
+        # 점수가 가장 높은 항목이 무엇인지 먼저 찾습니다.
+        scores = {
+            "violence": violence,
+            "sexual_content": sexual,
+            "threat": threat,
+            "hate_speech": hate_speech,
+            "profanity": profanity
+        }
+        max_cat = max(scores, key=scores.get)
+        max_score = scores[max_cat]
+
+        category = "safe" # 기본값
+
+        if is_malicious:
+            # 최고 점수 항목이 15점만 넘어도 해당 카테고리로 명명 (20점 혐오표현 해결)
+            if max_score > 15:
+                category = max_cat
+            # 만약 개별 점수들은 낮은데 전체 독성(toxicity)만 높은 경우
+            elif toxicity > 70:
+                category = "highly_toxic"
+            else:
+                category = "moderately_toxic"
         else:
             category = "safe"
-        
+
         confidence = 95.0 if guard_result.get("guard_success") and llama_result.get("llama_success") else 70.0
         
         # Merge detected keywords (Rules + AI)

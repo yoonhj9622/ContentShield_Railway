@@ -62,11 +62,11 @@ export default function NoticeList() {
 
                 {/* 필터 */}
                 <Card className="mb-6">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-2">
+                    <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
                             <Filter className="text-slate-500" size={18} />
-                            <span className="text-sm text-slate-400 mr-3">필터:</span>
-                            <div className="flex gap-2 flex-wrap">
+                            <span className="text-sm text-slate-400 mr-4">필터:</span>
+                            <div className="flex gap-3 flex-wrap">
                                 {['ALL', 'GENERAL', 'MAINTENANCE', 'UPDATE', 'URGENT'].map(type => (
                                     <button
                                         key={type}
@@ -74,8 +74,8 @@ export default function NoticeList() {
                                             setSelectedType(type);
                                             setPage(0); // 필터 변경 시 첫 페이지로
                                         }}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedType === type
-                                            ? 'bg-blue-600 text-white'
+                                        className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${selectedType === type
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
                                             : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                             }`}
                                     >

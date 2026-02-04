@@ -85,71 +85,77 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-8">📊 Admin Dashboard</h1>
+    <div className="min-h-screen bg-slate-950 p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-white mb-8">📊 Admin Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <AdminStatCard title="Total Users" value={stats.totalUsers} icon={Users} color="blue" />
-        <AdminStatCard title="Active Users" value={stats.activeUsers} icon={Activity} color="green" />
-        <AdminStatCard title="Flagged Users" value={stats.flaggedUsers} icon={AlertTriangle} color="yellow" />
-        <AdminStatCard title="Suspended Users" value={stats.suspendedUsers} icon={UserX} color="red" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 🆕 User Growth - 실제 데이터 */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">User Growth</h2>
-          {growthLoading ? (
-            <div className="flex justify-center items-center h-[300px] text-gray-400">
-              Loading...
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={userGrowthData || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value) => [`${value}명`, '신규 가입']}
-                  labelFormatter={(label) => `${label}`}
-                />
-                <Bar dataKey="users" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <AdminStatCard title="Total Users" value={stats.totalUsers} icon={Users} color="blue" />
+          <AdminStatCard title="Active Users" value={stats.activeUsers} icon={Activity} color="green" />
+          <AdminStatCard title="Flagged Users" value={stats.flaggedUsers} icon={AlertTriangle} color="yellow" />
+          <AdminStatCard title="Suspended Users" value={stats.suspendedUsers} icon={UserX} color="red" />
         </div>
 
-        {/* 🆕 Recent Activity - 실제 데이터 */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Recent Activity</h2>
-          {logsLoading ? (
-            <div className="flex justify-center items-center h-[300px] text-gray-400">
-              Loading...
-            </div>
-          ) : recentLogs && recentLogs.length > 0 ? (
-            <div className="space-y-3 max-h-[300px] overflow-y-auto">
-              {recentLogs.map((log, idx) => (
-                <div key={log.logId || idx} className="flex items-center justify-between p-3 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
-                  <div>
-                    <p className="font-medium text-gray-800">{getActionLabel(log.actionType)}</p>
-                    <p className="text-sm text-gray-500">
-                      {log.targetType} #{log.targetId}
-                      {log.description && (
-                        <span className="ml-2 text-gray-400">- {log.description.substring(0, 30)}...</span>
-                      )}
-                    </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 🆕 User Growth - 실제 데이터 */}
+          <div className="bg-slate-900 rounded-lg shadow-xl border border-slate-800 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white">User Growth</h2>
+            {growthLoading ? (
+              <div className="flex justify-center items-center h-[300px] text-slate-400">
+                Loading...
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={userGrowthData || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f1f5f9' }}
+                    itemStyle={{ color: '#f1f5f9' }}
+                    labelStyle={{ color: '#94a3b8' }}
+                    cursor={{ fill: '#334155', opacity: 0.4 }}
+                    formatter={(value) => [`${value}명`, '신규 가입']}
+                    labelFormatter={(label) => `${label}`}
+                  />
+                  <Bar dataKey="users" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* 🆕 Recent Activity - 실제 데이터 */}
+          <div className="bg-slate-900 rounded-lg shadow-xl border border-slate-800 p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white">Recent Activity</h2>
+            {logsLoading ? (
+              <div className="flex justify-center items-center h-[300px] text-slate-400">
+                Loading...
+              </div>
+            ) : recentLogs && recentLogs.length > 0 ? (
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                {recentLogs.map((log, idx) => (
+                  <div key={log.logId || idx} className="flex items-center justify-between p-3 bg-slate-800/50 rounded hover:bg-slate-800 transition-colors border border-slate-700/50">
+                    <div>
+                      <p className="font-medium text-slate-200">{getActionLabel(log.actionType)}</p>
+                      <p className="text-sm text-slate-400">
+                        {log.targetType} #{log.targetId}
+                        {log.description && (
+                          <span className="ml-2 text-slate-500">- {log.description.substring(0, 30)}...</span>
+                        )}
+                      </p>
+                    </div>
+                    <span className="text-xs text-slate-500 whitespace-nowrap ml-2">
+                      {getTimeAgo(log.createdAt)}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
-                    {getTimeAgo(log.createdAt)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex justify-center items-center h-[300px] text-gray-400">
-              최근 활동이 없습니다.
-            </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center items-center h-[300px] text-slate-500">
+                최근 활동이 없습니다.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -158,18 +164,18 @@ export default function AdminDashboard() {
 
 function AdminStatCard({ title, value, icon: Icon, color }) {
   const colors = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
-    red: 'bg-red-100 text-red-600',
+    blue: 'bg-blue-900/30 text-blue-400 border border-blue-900/50',
+    green: 'bg-green-900/30 text-green-400 border border-green-900/50',
+    yellow: 'bg-yellow-900/30 text-yellow-400 border border-yellow-900/50',
+    red: 'bg-red-900/30 text-red-400 border border-red-900/50',
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
+    <div className="bg-slate-900 rounded-lg shadow-xl border border-slate-800 p-6">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm text-gray-600">{title}</p>
-          <p className="text-3xl font-bold mt-1">{value}</p>
+          <p className="text-sm text-slate-400">{title}</p>
+          <p className="text-3xl font-bold mt-1 text-white">{value}</p>
         </div>
         <div className={`p-3 rounded-lg ${colors[color]}`}>
           <Icon className="h-6 w-6" />

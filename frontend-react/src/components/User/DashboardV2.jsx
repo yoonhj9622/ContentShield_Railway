@@ -1045,8 +1045,11 @@ function CommentAnalysisView() {
                     if (['SPAM', '스팸'].includes(up)) return '스팸';
 
                     // 2. 기타 독성 매핑
-                    if (['TOXICITY', 'SEVERE_TOXICITY', 'MODERATELY_TOXIC', 'INSULT'].includes(up)) return '욕설';
-                    if (['IDENTITY_ATTACK'].includes(up)) return '혐오표현';
+                    if (['SEVERE_TOXICITY', 'HIGHLY_TOXIC'].includes(up)) return '매우 유해함';
+                    if (['TOXICITY', 'TOXIC'].includes(up)) return '유해함';
+                    if (['MODERATELY_TOXIC'].includes(up)) return '보통 유해함';
+                    if (['INSULT'].includes(up)) return '욕설';
+                    if (['IDENTITY_ATTACK', 'DEFAMATION'].includes(up)) return '혐오표현';
 
                     // 3. 정상/기타
                     if (['CLEAN', 'NORMAL', 'SAFE', '정상'].includes(up)) return '정상';

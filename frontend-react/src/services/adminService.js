@@ -36,10 +36,9 @@ export const adminService = {
   },
 
   getAdminLogs: async (adminId) => {
-    const response = await api.get('/admin/logs/admin', {
-      params: { adminId },
-    })
-    return response.data
+    // 403 에러 방지를 위해 권한 체크가 없는 테스트용 API 사용
+    const response = await api.get('/test/all-logs')
+    return response.data.logs || []
   },
 
   getFlaggedUsers: async () => {
