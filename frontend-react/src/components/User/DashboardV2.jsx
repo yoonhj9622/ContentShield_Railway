@@ -1012,17 +1012,49 @@ function CommentAnalysisView() {
               <span className="text-slate-400">카테고리:</span>
               <span className="px-3 py-1 rounded-full bg-blue-600/20 text-blue-400 text-sm font-bold">
                 {(() => {
-                  const categoryMap = {
-                    'PROFANITY': '욕설',
-                    'HATE': '혐오표현',
-                    'VIOLENCE': '폭력성',
-                    'THREAT': '협박',
-                    'SEXUAL': '성적희롱',
-                    'SPAM': '스팸',
-                    'CLEAN': '정상'
+                  const normalizeCategory = (code) => {
+                    if (!code) return '정상';
+                    const up = code.toUpperCase();
+
+                    // --- [S1~S13 Llama Guard Code Translation] ---
+                    // 이 부분이 배지로 출력될 때 한글로 나오게 함
+                    const llamaGuardMap = {
+                      'S1': '강력 범죄', 'VIOLENT_CRIMES': '강력 범죄',
+                      'S2': '비폭력 범죄', 'NON_VIOLENT_CRIMES': '비폭력 범죄',
+                      'S3': '성범죄', 'SEX_RELATED_CRIMES': '성범죄',
+                      'S4': '아동 성착취', 'CHILD_SEXUAL_EXPLOITATION': '아동 성착취', 'CHILD_EXPLOITATION': '아동 성착취',
+                      'S5': '명예훼손', 'DEFAMATION': '명예훼손',
+                      'S6': '전문 조언 위반', 'SPECIALIZED_ADVICE': '전문 조언 위반',
+                      'S7': '개인정보 침해', 'PRIVACY': '개인정보 침해',
+                      'S8': '지적재산권 침해', 'INTELLECTUAL_PROPERTY': '지적재산권 침해',
+                      'S9': '무차별 무기 편취', 'INDISCRIMINATE_WEAPONS': '무차별 무기 편취',
+                      'S10': '혐오 발언', 'HATE': '혐오 발언',
+                      'S11': '자해 및 자살', 'SELF_HARM': '자해 및 자살',
+                      'S12': '성적 콘텐츠', 'SEXUAL_CONTENT': '성적 콘텐츠',
+                      'S13': '선거 개입', 'ELECTIONS': '선거 개입'
+                    };
+
+                    if (llamaGuardMap[up]) return llamaGuardMap[up];
+
+                    // --- [기존 7대 카테고리 매핑 (Fallback)] ---
+                    if (['PROFANITY', '욕설'].includes(up)) return '욕설';
+                    if (['HATE', 'HATE_SPEECH', '혐오표현'].includes(up)) return '혐오표현';
+                    if (['VIOLENCE', '폭력성'].includes(up)) return '폭력성';
+                    if (['THREAT', '협박'].includes(up)) return '협박';
+                    if (['SEXUAL', '성적희롱', 'OBSCENE', 'SEXUALLY_EXPLICIT', 'FLIRTATION'].includes(up)) return '성적희롱';
+                    if (['SPAM', '스팸'].includes(up)) return '스팸';
+
+                    // 2. 기타 독성 매핑
+                    if (['TOXICITY', 'SEVERE_TOXICITY', 'MODERATELY_TOXIC', 'INSULT'].includes(up)) return '욕설';
+                    if (['IDENTITY_ATTACK'].includes(up)) return '혐오표현';
+
+                    // 3. 정상/기타
+                    if (['CLEAN', 'NORMAL', 'SAFE', '정상'].includes(up)) return '정상';
+
+                    return '정상';
                   };
-                  // 대문자로 변환해서 비교하여 정확도를 높임
-                  return categoryMap[result.category?.toUpperCase()] || result.category;
+
+                  return normalizeCategory(result.category);
                 })()}
               </span>
             </div>
@@ -1060,8 +1092,9 @@ function CommentAnalysisView() {
             )}
           </CardContent>
         </Card>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
 

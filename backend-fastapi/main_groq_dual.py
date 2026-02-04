@@ -382,9 +382,10 @@ Respond in valid JSON format only, no markdown:
   "threat_score": <0-100>,
   "violence_score": <0-100>,
   "sexual_score": <0-100>,
-  "reasoning": "<brief explanation in KOREAN>"
+  "key_phrases": ["<phrase1>", "<phrase2>"],
+  "reasoning": "<항목 이름(예: '혐오표현 점수', '욕설 점수' 등)을 반드시 한글로 사용하여 분석 결과를 한국어로 설명하세요.>"
 }"""
-                user_prompt = f'다음 텍스트의 유해성을 분석해주세요: "{text}"'
+                user_prompt = f'다음 텍스트의 유해성을 분석하고, 문제가 되는 핵심 문구나 단어를 key_phrases에 배열로 추출해주세요: "{text}"'
             else:
                 system_prompt = """You are an expert in analyzing toxic and harmful content.
 Analyze the given text and provide detailed scores (0-100) for each category.
@@ -397,9 +398,10 @@ Respond in valid JSON format only, no markdown:
   "threat_score": <0-100>,
   "violence_score": <0-100>,
   "sexual_score": <0-100>,
+  "key_phrases": ["<phrase1>", "<phrase2>"],
   "reasoning": "<brief explanation in English>"
 }"""
-                user_prompt = f'Analyze this text for harmful content: "{text}"'
+                user_prompt = f'Analyze this text for harmful content and extract problematic key phrases into key_phrases: "{text}"'
             
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
@@ -440,6 +442,7 @@ Respond in valid JSON format only, no markdown:
                         "threat_score": json_result.get("threat_score", 0),
                         "violence_score": json_result.get("violence_score", 0),
                         "sexual_score": json_result.get("sexual_score", 0),
+                        "key_phrases": json_result.get("key_phrases", []),
                         "reasoning": json_result.get("reasoning", ""),
                         "llama_success": True
                     }
@@ -560,6 +563,10 @@ Respond in valid JSON format only, no markdown:
         
         confidence = 95.0 if guard_result.get("guard_success") and llama_result.get("llama_success") else 70.0
         
+        # Merge detected keywords (Rules + AI)
+        ai_keywords = llama_result.get("key_phrases", [])
+        combined_keywords = list(set(rule_result["detected_keywords"] + ai_keywords))
+        
         return {
             "is_malicious": is_malicious,
             "toxicity_score": round(toxicity, 2),
@@ -570,7 +577,7 @@ Respond in valid JSON format only, no markdown:
             "sexual_score": round(sexual, 2),
             "confidence_score": round(confidence, 2),
             "category": category,
-            "detected_keywords": rule_result["detected_keywords"],
+            "detected_keywords": combined_keywords,
             "guard_result": {
                 "is_safe": guard_result.get("is_safe", True),
                 "violated_categories": violated_cats
@@ -597,9 +604,11 @@ Respond in valid JSON format only, no markdown:
             "threat_score": round(llama_result.get("threat_score", 0), 2),
             "violence_score": round(llama_result.get("violence_score", 0), 2),
             "sexual_score": round(llama_result.get("sexual_score", 0), 2),
+            "violence_score": round(llama_result.get("violence_score", 0), 2),
+            "sexual_score": round(llama_result.get("sexual_score", 0), 2),
             "confidence_score": 85.0,
             "category": "toxic" if toxicity > 50 else "safe",
-            "detected_keywords": rule_result["detected_keywords"],
+            "detected_keywords": list(set(rule_result["detected_keywords"] + llama_result.get("key_phrases", []))),
             "guard_result": None,
             "guard_categories": [],
             "llama_reasoning": llama_result.get("reasoning", "")
