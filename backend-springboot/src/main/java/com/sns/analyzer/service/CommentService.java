@@ -51,10 +51,9 @@ public class CommentService {
         List<Map<String, Object>> crawledComments = crawlYoutubeComments(url);
         System.out.println("[DEBUG] Crawler returned " + crawledComments.size() + " comments");
 
-        // 2. DB 저장 및 분석
-        return transactionTemplate.execute(txStatus -> {
-            int successCount = 0;
-            int failCount = 0;
+        // 2. DB 저장 (트랜잭션 1: 댓글 저장)
+        Map<String, Object> saveResult = transactionTemplate.execute(txStatus -> {
+            List<Long> ids = new ArrayList<>();
             int skippedCount = 0;
             int dateSkipCount = 0;
 
@@ -63,9 +62,16 @@ public class CommentService {
 
             for (Map<String, Object> c : crawledComments) {
                 try {
+                    String externalId = (String) c.get("external_id");
+                    // 중복 체크
+                    if (externalId != null && !externalId.isEmpty()
+                            && commentRepository.existsByUserIdAndExternalCommentId(userId, externalId)) {
+                        skippedCount++;
+                        continue;
+                    }
+
                     String text = (String) c.get("text");
                     String author = (String) c.get("author");
-                    String externalId = (String) c.get("external_id");
                     String publishDateStr = (String) c.get("publish_date");
 
                     if (text == null || text.trim().isEmpty())
@@ -105,7 +111,6 @@ public class CommentService {
                             }
                         }
                     }
-
                     Comment comment = Comment.builder()
                             .userId(userId)
                             .platform("YOUTUBE")
@@ -128,22 +133,49 @@ public class CommentService {
                         comment.setMatchedBlockedWord(matchedWord);
                     }
 
-                    commentRepository.save(comment);
-                    successCount++;
+                    Comment saved = commentRepository.save(comment);
+                    ids.add(saved.getCommentId());
 
                 } catch (Exception e) {
-                    failCount++;
-                    e.printStackTrace();
+                    System.err.println("[ERROR] Failed to save comment: " + e.getMessage());
                 }
             }
-
             return Map.of(
+                    "ids", ids,
+                    "skipped", skippedCount,
                     "totalCrawled", crawledComments.size(),
-                    "savedCount", successCount,
-                    "skippedCount", skippedCount,
-                    "dateSkipCount", dateSkipCount, // 🔥 기간 만료 카운트 추가
-                    "failCount", failCount);
+                    "dateSkipCount", dateSkipCount,
+                    "savedCount", ids.size());
         });
+
+        List<Long> savedIds = (List<Long>) saveResult.get("ids");
+        int skippedCount = (int) saveResult.get("skipped");
+
+        // 3. 분석 수행 (트랜잭션 2...N: 개별 분석)
+        // comments are already committed here, so REQUIRES_NEW in analyzeComment will
+        // work perfectly.
+        int successCount = 0;
+        int failCount = 0;
+        List<AnalysisResult> results = new ArrayList<>();
+
+        for (Long id : savedIds) {
+            try {
+                AnalysisResult result = analysisService.analyzeComment(id, userId);
+                results.add(result);
+                successCount++;
+            } catch (Exception e) {
+                failCount++;
+                System.err.println("[ERROR] Analysis Failed for commentId " + id + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        return Map.of(
+                "totalCrawled", crawledComments.size(),
+                "analyzedCount", successCount,
+                "skippedCount", skippedCount,
+                "failCount", failCount,
+                "results", results);
     }
 
     /**
