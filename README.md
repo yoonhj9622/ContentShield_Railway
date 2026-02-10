@@ -1,114 +1,99 @@
-# ContentShield
-ai를 활용한 유튜브 댓글 필터링 서비스 
+# 🛡️ ContentShield: AI-Powered SNS Governance Solution
 
-26.01.16 프로젝트 현황 및 도커 실행 방법 정리(실행 방법)
+[![Build Status](https://img.shields.io/badge/Build-Jenkins-blue?logo=jenkins)](http://localhost:8080)
+[![Deployment](https://img.shields.io/badge/Deployment-Railway-purple?logo=railway)](https://frontend-react-production-1e78.up.railway.app)
+[![Tech Stack](https://img.shields.io/badge/Stack-Spring%20%7C%20FastAPI%20%7C%20React-green)]()
 
-ContentShield Backend – 로컬 & Docker 배포 정리 (팀 공유용)
-1️⃣ 현재 상태 요약 (결론)
+ContentShield는 유튜브(YouTube)를 포함한 SNS 콘텐츠의 유해성을 실시간으로 모니터링하고 분석하는 AI 기반의 통합 거버넌스 솔루션입니다. 
 
-✅ Spring Boot 백엔드 서버 정상 실행
+---
 
-✅ Docker + Docker Compose 기반으로 MariaDB 포함 전체 인프라 기동 성공
+## 🚀 서비스 바로가기
+**📍 포트폴리오 URL**: [https://frontend-react-production-1e78.up.railway.app](https://frontend-react-production-1e78.up.railway.app)
 
-✅ /health API 외부(브라우저/로컬) 접근 정상
+---
 
-✅ 컨테이너 내부/외부 네트워크 분리 및 연동 정상
+## 📝 프로젝트 개요
+수많은 온라인 콘텐츠 속에서 혐오 발언, 욕설, 위협 등을 자동으로 탐지하고, 사용자가 부정적인 문장을 긍정적이고 정중한 표현으로 개선할 수 있도록 돕습니다. 마이크로서비스 아키텍처(MSA)를 통해 확장성과 유지보수성을 극대화하였습니다.
 
-✅ 팀원이 동일 환경에서 그대로 재현 가능
+---
 
-2️⃣ 프로젝트 구조 (중요)
+## 🛠 기술 스택 (Tech Stack)
 
-ContentShield/
-├─ backend/                # Spring Boot 백엔드
-│  ├─ Dockerfile
-│  ├─ build.gradle
-│  └─ src/main/java/com/contentshield/backend
-│     └─ HealthController.java
-│
-├─ infra/                  # 인프라(Docker Compose)
-│  ├─ docker-compose.yml
-│  └─ mariadb/
-│
-├─ .env                    # 공통 환경 변수 (중요!)
-├─ .env.example            # 환경 변수 템플릿
-└─ README.md
+### Backend & AI
+- **Spring Boot 3.2**: 비즈니스 로직, JWT 보안, JPA 엔티티 관리
+- **FastAPI**: Python 기반 AI 추론 엔진 (Groq & LangChain)
+- **Groq LLM**: Llama-3.1-8B (분석), Llama-Guard-3 (안전 필터)
+- **LangChain**: Text-to-SQL을 활용한 지능형 통계 데이터 추출
 
-3️⃣ 정상 응답 확인
-curl http://localhost:8080/health
-# → ok
+### Frontend
+- **React**: 상태 관리 및 실시간 분석 대시보드
+- **Tailwind CSS**: 모던하고 직관적인 UI 디자인
 
-curl http://localhost:8080/hello
-# → hello contentshield
+### DevOps & Database
+- **CI/CD**: Jenkins, Docker, Docker Compose (WSL2 기반 연동)
+- **Database**: MySQL, MariaDB
+- **Cloud**: Railway (Full-stack Deployment)
 
-4️⃣ Docker Compose 구성 핵심 요약
-🔹 MariaDB
+---
 
-컨테이너 이름: contentshield-db
+## ✨ 핵심 기능 (Key Features)
 
-포트: 3306
+### 1. 전수 조사 및 실시간 수집 (YouTube Comment Crawling)
+- 영상 URL 입력만으로 수천 개의 댓글을 실시간 스크래핑 (`youtube-comment-downloader` 활용).
+- 상대 시간 파싱 및 중복 수집 방지 알고리즘 적용.
 
-healthcheck 포함 → backend는 DB가 살아있을 때만 기동
+### 2. AI 듀얼 모델 유해성 분석
+- **Llama-Guard-3**: 글로벌 안전 정책에 따른 유해 카테고리(S1~S13) 1차 필터링.
+- **Llama-3.1-8B**: 6대 유해 지표(독성, 비속어, 위협 등) 정밀 점수화 및 AI 분석 이유 생성.
 
-🔹 Backend
+### 3. AI Writing Assistant
+- 유해 문장을 **5가지 대화 톤**(공손함, 친근함, 격식 등)으로 자동 교정 제안.
+- 영상 맥락에 기반한 건설적인 답변 템플릿 생성 보조.
 
-컨테이너 이름: contentshield-backend
+### 4. 지능형 통계 리포트 (Text-to-SQL)
+- 자연어 질의를 통한 데이터베이스 분석. 
+- *"지난주 유해도가 가장 높은 악플러 3명 알려줘"* ➔ **SQL 자동 생성 및 실행 ➔ 분석 결과 보고서 출력**.
 
-포트: 8080
+---
 
-env_file: .env 사용
+## 🏗 시스템 아키텍처 (Architecture)
 
-DB 주소는 localhost가 아니라 서비스명(db) 사용
+```mermaid
+graph TD
+    User([User]) <--> Frontend[React Frontend]
+    Frontend <--> Nginx{Nginx Proxy/Gateway}
+    Nginx <--> Backend[Spring Boot API]
+    Nginx <--> AIService[FastAPI AI Engine]
+    Backend <--> DB[(MySQL DB)]
+    AIService <--> DB
+    AIService <--> Groq{Groq LPU Acceleration}
+```
 
-5️⃣ .env 파일 (필수)
+---
 
-📍 위치: ContentShield/.env
+## 📦 설치 및 실행 방법 (Installation)
 
-DB_NAME=contentshield
-DB_USER=root
-DB_PASSWORD=1234
-DB_ROOT_PASSWORD=root1234
+### 1. Repository Clone
+```bash
+git clone https://github.com/yoonhj9622/contentshield.git
+cd contentshield
+```
 
-6️⃣ 실행 방법 (팀원 기준 그대로 따라 하면 됨)
+### 2. 환경 변수 설정 (.env)
+- `backend-fastapi/.env` 파일에 AI API 키 등록:
+```env
+GROQ_API_KEY=your_key_here
+```
 
-① infra 폴더로 이동
-cd infra
+### 3. Docker Compose 실행 (로컬 환경)
+```bash
+docker-compose up --build
+```
 
-② 전체 초기화 (권장)
-docker compose down -v
+---
 
-③ 캐시 없이 빌드
-docker compose build --no-cache
-
-④ 기동
-docker compose up -d
-
-⑤ 상태 확인
-docker ps
-
-
-정상 상태:
-
-contentshield-db        Up (healthy)
-contentshield-backend   Up
-
-7️⃣ 현재 아키텍처 흐름
-[Browser / curl]
-↓
-localhost:8080
-↓
-[Docker: contentshield-backend]
-↓
-[Docker Network]
-↓
-[Docker: contentshield-db (MariaDB)]
-
-
-✔ 컨테이너 내부에서는 DB_HOST=db
-✔ 외부 접근은 localhost:8080
-
-✅ 결론 한 줄 요약
-
-ContentShield 백엔드는 Docker 기반으로 완전한 로컬 배포 환경이 구축되었고,
-팀원 누구든 .env만 맞추면 동일하게 실행 가능하다.
-
-깃
+## 🛠 배포 및 CI/CD (DevOps)
+- **WSL2(Ubuntu)** 환경에 구축된 **Jenkins**를 통해 자동 빌드 및 배포 수행.
+- **Docker-in-Docker(DinD)**를 활용하여 젠킨스 파이프라인 내부에서 컨테이너 이미지화 자동화.
+- **Railway Cloud**를 통한 무중단 배포 및 SSL(SNI) 보안 통신 적용.
