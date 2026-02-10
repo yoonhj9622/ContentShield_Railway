@@ -10,27 +10,21 @@ server {
 
     # API Proxy
     location /api/ {
-        # Using a variable in proxy_pass avoids startup failure if the host is down
-        resolver 8.8.8.8;
-        set $backend_url ${BACKEND_URL};
-        proxy_pass $backend_url;
+        proxy_pass ${BACKEND_URL};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     # AI Service Proxy
     location /analyze {
-        resolver 8.8.8.8;
-        set $ai_url ${AI_URL};
-        proxy_pass $ai_url;
+        proxy_pass ${AI_URL};
         proxy_set_header Host $host;
     }
     
     location /crawl {
-        resolver 8.8.8.8;
-        set $ai_url ${AI_URL};
-        proxy_pass $ai_url;
+        proxy_pass ${AI_URL};
         proxy_set_header Host $host;
     }
 }
