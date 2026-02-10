@@ -46,14 +46,21 @@ CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
 Railway 대시보드 내 각 서비스의 **`Variables`** 탭에 아래 내용을 입력하세요.
 
-*   **Spring Boot 서비스**:
-    *   `MYSQLHOST`: MariaDB 서비스 이름
-    *   `MYSQLPASSWORD`: MariaDB 비밀번호
+*   **Spring Boot 서비스 하단 `Variables`**:
+    *   `MYSQLHOST`: MariaDB 서비스의 Host (예: `roundhouse.proxy.rlwy.net`)
+    *   `MYSQLPORT`: MariaDB 서비스의 Port (예: `12345`)
+    *   `MYSQLUSER`: `root`
+    *   `MYSQLPASSWORD`: (MariaDB 비밀번호)
     *   `MYSQLDATABASE`: `sns_content_analyzer`
-*   **FastAPI 서비스**:
+    *   `AI_SERVICE_URL`: (생성된 AI-FastAPI 서비스의 주소 - `https://xxx.railway.app`)
+
+*   **AI (FastAPI) 서비스 하단 `Variables`**:
     *   `GROQ_API_KEY`: 여러분의 API 키
-*   **Frontend 서비스**:
-    *   `VITE_API_BASE_URL`: 생성된 Spring Boot 서비스의 공개 URL 주소
+    *   `MYSQLHOST`, `MYSQLPORT`, `MYSQLPASSWORD` 등 DB 정보도 동일하게 입력 (DB 연동 시 필요)
+
+*   **Frontend (React) 서비스 하단 `Variables`**:
+    *   `BACKEND_URL`: (생성된 Spring Boot 주소 - `https://xxx.railway.app`)
+    *   `AI_URL`: (생성된 FastAPI 주소 - `https://xxx.railway.app`)
 
 ---
 

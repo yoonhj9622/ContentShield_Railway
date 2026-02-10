@@ -9,6 +9,11 @@ RUN npm run build
 # Production stage (Nginx)
 FROM nginx:stable-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy template instead of direct conf
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Railway dynamically assigns $PORT
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+
+# Use envsubst to replace variables in nginx config at startup
+CMD ["sh", "-c", "envsubst '${PORT} ${BACKEND_URL} ${AI_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && sed -i 's/listen 80;/listen '\"$PORT\"';/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

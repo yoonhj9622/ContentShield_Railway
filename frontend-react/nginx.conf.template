@@ -1,0 +1,36 @@
+server {
+    listen 80;
+    server_name localhost;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API Proxy
+    location /api/ {
+        # Using a variable in proxy_pass avoids startup failure if the host is down
+        resolver 8.8.8.8;
+        set $backend_url ${BACKEND_URL};
+        proxy_pass $backend_url;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # AI Service Proxy
+    location /analyze {
+        resolver 8.8.8.8;
+        set $ai_url ${AI_URL};
+        proxy_pass $ai_url;
+        proxy_set_header Host $host;
+    }
+    
+    location /crawl {
+        resolver 8.8.8.8;
+        set $ai_url ${AI_URL};
+        proxy_pass $ai_url;
+        proxy_set_header Host $host;
+    }
+}
