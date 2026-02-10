@@ -14,11 +14,11 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Database configuration from environment variables (matching Spring Boot)
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "3307")
-DB_NAME = os.getenv("DB_NAME", "sns_content_analyzer")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "1234")
+DB_HOST = os.getenv("MYSQLHOST", "localhost")
+DB_PORT = os.getenv("MYSQLPORT", "3306")
+DB_NAME = os.getenv("MYSQLDATABASE", "sns_content_analyzer")
+DB_USER = os.getenv("MYSQLUSER", "root")
+DB_PASSWORD = os.getenv("MYSQLPASSWORD", "1234")
 
 # Create async database URL
 DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"

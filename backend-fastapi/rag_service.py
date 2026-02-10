@@ -26,11 +26,11 @@ class RAGService:
         self.chat_history = []
         
         # 1. DB 연결
-        db_user = os.getenv("DB_USER", "root")
-        db_password = os.getenv("DB_PASSWORD", "1234")
-        db_host = os.getenv("DB_HOST", "localhost")
-        db_port = os.getenv("DB_PORT", "3307")
-        db_name = os.getenv("DB_NAME", "sns_content_analyzer")
+        db_user = os.getenv("MYSQLUSER", "root")
+        db_password = os.getenv("MYSQLPASSWORD", "1234")
+        db_host = os.getenv("MYSQLHOST", "localhost")
+        db_port = os.getenv("MYSQLPORT", "3306")
+        db_name = os.getenv("MYSQLDATABASE", "sns_content_analyzer")
         
         self.db_url = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
         
