@@ -67,7 +67,7 @@ services:
     build: ./frontend-react
     container_name: contentshield-frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
       # Use service names for internal networking if using nginx,
       # but for client-side React, we often need localhost or reverse proxy.
