@@ -121,7 +121,8 @@ public class SecurityConfig {
                  * .anyRequest().authenticated()
                  * )
                  * .authenticationProvider(authenticationProvider())
-                 * .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                 * .addFilterBefore(jwtAuthenticationFilter,
+                 * UsernamePasswordAuthenticationFilter.class);
                  * return http.build();
                  */
         }
@@ -137,11 +138,8 @@ public class SecurityConfig {
                 configuration.setAllowedOriginPatterns(Arrays.asList(
                                 "http://localhost:3000",
                                 "http://localhost:3001",
-                                "http://localhost:5173"
-                                // 배포 도메인 패턴이 필요하면 아래처럼 추가:
-                                // "https://your-domain.com",
-                                // "https://*.your-domain.com"
-                ));
+                                "http://localhost:5173",
+                                "https://*.railway.app"));
                 // #여기까지
 
                 // 허용할 HTTP 메서드
