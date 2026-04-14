@@ -39,6 +39,7 @@ public interface AdminLogRepository extends JpaRepository<AdminLog, Long> {
     List<AdminLog> findByAdminIdOrderByCreatedAtDesc(Long adminId);
     
     // ✅ 디버깅용: 오늘 생성된 로그 수 확인
-    @Query("SELECT COUNT(a) FROM AdminLog a WHERE DATE(a.createdAt) = CURRENT_DATE")
+    //@Query("SELECT COUNT(a) FROM AdminLog a WHERE DATE(a.createdAt) = CURRENT_DATE")
+    @Query("SELECT count(a) FROM AdminLog a WHERE CAST(a.createdAt AS date) = CURRENT_DATE")
     long countTodayLogs();
 }
