@@ -28,26 +28,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // #여기까지
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
+protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    String path = request.getRequestURI();
+    
+    // 로그를 찍어서 실제 path가 어떻게 찍히는지 서버에서 확인해야 합니다.
+    System.out.println("DEBUG: request path = [" + path + "]");
 
-        // 🔓 1. 루트 경로 및 기본 정적 리소스는 필터 검증 제외
-        if (path.equals("/") || path.equals("/index.html") || path.equals("/favicon.ico") || path.equals("/error")) {
-            return true;
-        }
-
-        // 🔓 2. 로그인/회원가입은 JWT 검사 제외
-        if (path.startsWith("/api/auth/")) {
-            return true;
-        }
-
-        // 🔓 3. CORS preflight 요청 제외
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
-
-        return false;
+    // 루트(/)를 포함하여 조금 더 확실하게 예외 처리
+    if (path == null || path.equals("/") || path.isEmpty() || path.equals("/index.html") || path.equals("/error")) {
+        return true;
     }
+
+    if (path.startsWith("/api/auth/")) return true;
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+
+    return false;
+}
     // ===========================
 
     @Override
