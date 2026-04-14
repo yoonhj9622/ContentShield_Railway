@@ -31,13 +31,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
 
-        // 로그인/회원가입은 JWT 검사 제외
-        if (path.startsWith("/api/auth/"))
+        // 🔓 1. 루트 경로 및 기본 정적 리소스는 필터 검증 제외
+        if (path.equals("/") || path.equals("/index.html") || path.equals("/favicon.ico") || path.equals("/error")) {
             return true;
+        }
 
-        // CORS preflight 요청 제외
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod()))
+        // 🔓 2. 로그인/회원가입은 JWT 검사 제외
+        if (path.startsWith("/api/auth/")) {
             return true;
+        }
+
+        // 🔓 3. CORS preflight 요청 제외
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
 
         return false;
     }
