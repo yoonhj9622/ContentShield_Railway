@@ -62,3 +62,7 @@ springBoot {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+// build.gradle 하단에 추가
+bootJar {
+    archiveFileName = 'app.jar'
+}
