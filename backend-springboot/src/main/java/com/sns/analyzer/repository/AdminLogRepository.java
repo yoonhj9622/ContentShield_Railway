@@ -40,6 +40,8 @@ public interface AdminLogRepository extends JpaRepository<AdminLog, Long> {
     
     // ✅ 디버깅용: 오늘 생성된 로그 수 확인
     //@Query("SELECT COUNT(a) FROM AdminLog a WHERE DATE(a.createdAt) = CURRENT_DATE")
-    @Query("SELECT count(a) FROM AdminLog a WHERE CAST(a.createdAt AS date) = CURRENT_DATE")
-    long countTodayLogs();
+    // AdminLogRepository.java 수정안
+@Query(value = "SELECT COUNT(*) FROM admin_log WHERE CAST(created_at AS DATE) = CURRENT_DATE", nativeQuery = true)
+long countTodayLogs();
+    
 }
