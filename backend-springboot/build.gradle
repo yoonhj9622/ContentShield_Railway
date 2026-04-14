@@ -66,3 +66,6 @@ tasks.named('test') {
 bootJar {
     archiveFileName = 'app.jar'
 }
+jar {
+    enabled = false
+}
