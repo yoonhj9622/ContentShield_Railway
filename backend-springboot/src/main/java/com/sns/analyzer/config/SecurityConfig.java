@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,141 +31,82 @@ import static org.springframework.http.HttpMethod.GET;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final CustomUserDetailsService userDetailsService;
-        private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-        @Bean
-        public AuthenticationManager authenticationManager(
-                        AuthenticationConfiguration authConfig) throws Exception {
-                return authConfig.getAuthenticationManager();
-        }
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
-        @Bean
-        public DaoAuthenticationProvider authenticationProvider() {
-                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-                authProvider.setUserDetailsService(userDetailsService);
-                authProvider.setPasswordEncoder(passwordEncoder());
-                return authProvider;
-        }
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
 
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-                // ============================================
-                // 개발 모드: 모든 API 허용 (현재 활성화)
-                // ============================================
-                // http
-                // .csrf(csrf -> csrf.disable())
-                // .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // .sessionManagement(session -> session
-                // .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // .authorizeHttpRequests(auth -> auth
-                // .anyRequest().permitAll() // 🔓 모든 요청 허용 (개발용)
-                // )
-                // .authenticationProvider(authenticationProvider())
-                // .addFilterBefore(jwtAuthenticationFilter,
-                // UsernamePasswordAuthenticationFilter.class);
+        http
+            .csrf(csrf -> csrf.disable()) 
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // 🔓 [수정] 루트 경로 및 기본 정적 리소스 허용
+                .requestMatchers("/", "/index.html", "/favicon.ico", "/error").permitAll() 
+                
+                // 🔓 공개 API 엔드포인트
+                .requestMatchers("/api/auth/**").permitAll() 
+                .requestMatchers(GET, "/api/notices/**").permitAll() 
+                .requestMatchers("/api/test/**").permitAll()
+                .requestMatchers("/api/public/**").permitAll() 
+                .requestMatchers("/actuator/health").permitAll() 
 
-                // return http.build();
+                // 🔐 관리자 전용
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // ============================================
-                // 운영 모드: JWT 인증 활성화 (나중에 사용)
-                // ============================================
-                // 배포 시 위의 개발 모드를 주석 처리하고 아래 코드의 주석을 해제하세요
+                // 🔐 나머지는 인증 필요
+                .anyRequest().authenticated())
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class);
 
-                http
-                                .csrf(csrf -> csrf.disable()) // JWT 사용 시 CSRF 비활성화
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .authorizeHttpRequests(auth -> auth
-                                                // 🔓 공개 엔드포인트 - 인증 없이 접근 가능
-                                                .requestMatchers("/api/auth/**").permitAll() // 로그인, 회원가입
-                                                .requestMatchers(GET, "/api/notices/**").permitAll() // 공지사항 조회
-                                                .requestMatchers("/api/test/**").permitAll()
-                                                .requestMatchers("/api/public/**").permitAll() // 기타 공개 API
-                                                .requestMatchers("/actuator/health").permitAll() // 헬스체크
+        return http.build();
+    }
 
-                                                // 🔐 관리자 전용 엔드포인트
-                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-                                                // 🔐 나머지는 인증 필요 (JWT 토큰 필수)
-                                                .anyRequest().authenticated())
-                                .authenticationProvider(authenticationProvider())
-                                .addFilterBefore(
-                                                jwtAuthenticationFilter,
-                                                UsernamePasswordAuthenticationFilter.class);
+        // 🌐 [수정] 배포 도메인 패턴을 더 명확하게 지정
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://localhost:5173",
+                "https://*.railway.app",
+                "https://contentshield-production-bcff.up.railway.app" // 실제 도메인 추가
+        ));
 
-                return http.build();
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
-                // ============================================
-                // 운영 모드: JWT 인증 활성화 (나중에 사용)
-                // ============================================
-                /*
-                 * http
-                 * .csrf(csrf -> csrf.disable())
-                 * .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                 * .sessionManagement(session ->
-                 * session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                 * )
-                 * .authorizeHttpRequests(auth -> auth
-                 * .requestMatchers("/api/auth/**").permitAll()
-                 * .requestMatchers("/api/notices/**").permitAll()
-                 * .requestMatchers("/api/public/**").permitAll()
-                 * .requestMatchers("/actuator/health").permitAll()
-                 * .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                 * .anyRequest().authenticated()
-                 * )
-                 * .authenticationProvider(authenticationProvider())
-                 * .addFilterBefore(jwtAuthenticationFilter,
-                 * UsernamePasswordAuthenticationFilter.class);
-                 * return http.build();
-                 */
-        }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
 
-        // [File: SecurityConfig.java / Date: 2026-01-22 / 설명: 프론트엔드 포트(3000, 3001) 및 인증
-        // 헤더 허용을 위한 CORS 설정 수정]
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
-                CorsConfiguration configuration = new CorsConfiguration();
-
-                // #장소영~여기까지: allowCredentials=true일 때 allowedOrigins에 "*"가 섞이면 Spring이 예외를 던짐
-                // → allowedOrigins 대신 allowedOriginPatterns 사용 (localhost/배포 도메인 모두 안전)
-                configuration.setAllowedOriginPatterns(Arrays.asList(
-                                "http://localhost:3000",
-                                "http://localhost:3001",
-                                "http://localhost:5173",
-                                "https://*.railway.app"));
-                // #여기까지
-
-                // 허용할 HTTP 메서드
-                configuration.setAllowedMethods(Arrays.asList(
-                                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-
-                // 허용할 헤더
-                configuration.setAllowedHeaders(Arrays.asList(
-                                "Authorization",
-                                "Content-Type",
-                                "X-Requested-With"));
-
-                // 응답에 노출할 헤더
-                configuration.setExposedHeaders(Arrays.asList(
-                                "Authorization"));
-
-                // 쿠키/인증 정보 허용
-                configuration.setAllowCredentials(true);
-
-                // preflight 요청 캐시 시간 (초)
-                configuration.setMaxAge(3600L);
-
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", configuration);
-
-                return source;
-        }
+        return source;
+    }
 }
