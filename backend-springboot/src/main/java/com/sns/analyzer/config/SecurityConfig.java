@@ -1,5 +1,5 @@
 package com.sns.analyzer.config;
-
+import jakarta.servlet.http.HttpServletResponse;
 import com.sns.analyzer.security.JwtAuthenticationFilter;
 import com.sns.analyzer.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -54,36 +54,35 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        // 🔒 [추가] 403 에러 핸들링 커스텀
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint((request, response, authException) -> {
+                // 인증되지 않은 사용자가 접근해도 에러를 내뿜지 않고 
+                // FilterChain의 다음 단계(permitAll 된 자원 확인)로 넘어가게 함
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            })
+        )
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/", "/index.html", "/favicon.ico", "/error", "/static/**").permitAll()
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers(GET, "/api/notices/**").permitAll()
+            .requestMatchers("/api/test/**").permitAll()
+            .requestMatchers("/api/public/**").permitAll()
+            .requestMatchers("/actuator/health").permitAll()
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .anyRequest().authenticated()
+        )
+        .authenticationProvider(authenticationProvider())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http
-            .csrf(csrf -> csrf.disable()) 
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // 🔓 [수정] 루트 경로 및 기본 정적 리소스 허용
-                .requestMatchers("/", "/index.html", "/favicon.ico", "/error").permitAll() 
-                
-                // 🔓 공개 API 엔드포인트
-                .requestMatchers("/api/auth/**").permitAll() 
-                .requestMatchers(GET, "/api/notices/**").permitAll() 
-                .requestMatchers("/api/test/**").permitAll()
-                .requestMatchers("/api/public/**").permitAll() 
-                .requestMatchers("/actuator/health").permitAll() 
-
-                // 🔐 관리자 전용
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                // 🔐 나머지는 인증 필요
-                .anyRequest().authenticated())
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
