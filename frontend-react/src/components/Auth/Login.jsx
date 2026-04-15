@@ -8,8 +8,10 @@ export default function Login() {
   const navigate = useNavigate()
   const setAuth = useAuthStore((state) => state.setAuth)
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  //const [email, setEmail] = useState('')
+ // const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('web9622@gmail.com')
+const [password, setPassword] = useState('w1234567')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -90,7 +92,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="이메일 주소"
-                defaultValue="web9622@gmail.com"
+                
               />
             </div>
             <div>
@@ -101,7 +103,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="비밀번호"
-                defaultValue="w1234567"
+                
               />
             </div>
           </div>
